@@ -1,7 +1,7 @@
 const { Router } = require("express")
 const tokenDAO = require('../daos/token');
 const jwt = require('jsonwebtoken');
-const SECRET_TOKEN = "SeCrEtToKeN";
+const SECRET_TOKEN = "x1x;U0K6R[J^(L&u'Hatu{8%Y<,Voj_2\Q!]dLe(Vu^K+.\Yx`g8q?f'%$CI#&Kccy;bJ~}~>pK@UCzR{>Eo2*-ax&T^(jKDH$nY3FK$*.&TJ#rJ9~owMFc;2;uaR[";
 
 async function isLoggedIn (req, res, next) {
     let token = req.headers.authorization;
