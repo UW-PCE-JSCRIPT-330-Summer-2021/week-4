@@ -82,24 +82,16 @@ router.post('/password', auth.isLoggedIn, async (req,res,next) => {
 
 router.post('/logout', auth.isLoggedIn, async (req,res,next) => {
 
-    const user = req.body;
     try {
-        if(!user.password || user.password.length === 0) {
-            throw new Error("Password is required");
-        }
-
-        const token = req.headers.authorization.split(' ')[1];
-        await tokenDAO.removeToken(token);
-        res.sendStatus(200);
+        await tokenDAO.removeToken(req.token);
+        res.sendStatus(200)
     } catch(e) {
             next(e);
         }    
 });
 
 
-router.use(function (err, req, res, next) {    
-
-    console.log(err.message);
+router.use(function (err, req, res, next) {
 
     if(err.message.includes('duplicate')) {
         res.status(409).send(`User with email ${user.email} is already signed up`);
