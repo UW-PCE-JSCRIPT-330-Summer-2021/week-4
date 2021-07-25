@@ -48,14 +48,22 @@ router.post('/', async (req,res,next) => {
                 throw new Error("Password is required");
             }
     
-            bcrypt.compare(user.password, existingUser.password, async (bErr, bRes) => {
-                if(bRes) {
-                    const tokenStr = await tokenDAO.getTokenForUserEmail(user.email);
-                    res.status(200).send({token: tokenStr});
-                } else {
-                    next(new Error('Passwords do not match'));
-                }    
-            });
+            // bcrypt.compare(user.password, existingUser.password, async (bErr, bRes) => {
+            //     if(bRes) {
+            //         const tokenStr = await tokenDAO.getTokenForUserEmail(user.email);
+            //         res.status(200).send({token: tokenStr});
+            //     } else {
+            //         next(new Error('Passwords do not match'));
+            //     }    
+            // });
+
+            const pwdMatch = await bcrypt.compare(user.password, existingUser.password);
+            if(pwdMatch) {
+                const tokenStr = await tokenDAO.getTokenForUserEmail(user.email);
+                res.status(200).send({token: tokenStr})
+            } else {
+                throw new Error('Passwords do not match');
+            }
     
         } catch(e) {
                 next(e);
@@ -64,17 +72,23 @@ router.post('/', async (req,res,next) => {
 });
 
 router.post('/password', auth.isLoggedIn, async (req,res,next) => {
-    const user = req.body;
-    
+    const newPassword = req.body.password;
+
     try {
-        if(!user.password || user.password.length === 0) {
+        if(!newPassword || newPassword.length === 0) {
             throw new Error("Password is required");
         }
 
-        const hashPWD = await bcrypt.hash(user.password, 10);
-        const tmpUser = {email: user.email, password: hashPWD};
+        const userId = await tokenDAO.getUserFromToken(req.token);
+        const user = await userDAO.getById(userId);
+        const userEmail = user.email;
+
+        const hashPWD = await bcrypt.hash(newPassword, 10);
+        const tmpUser = {email: userEmail, password: hashPWD};
+
         const updatedUser = await userDAO.updatePassword(tmpUser);
         res.json(updatedUser);
+
     } catch(e) {
             next(e);
         }

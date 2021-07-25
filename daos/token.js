@@ -25,7 +25,6 @@ module.exports.getUserFromToken = async (token) => {
     } catch(e) {
         throw new Error(e.message);
     }
-    
 }
 
 module.exports.removeToken = async(token) => {
