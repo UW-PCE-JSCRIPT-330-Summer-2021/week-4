@@ -2,6 +2,7 @@ const { Router } = require("express");
 const router = Router();
 
 const auth = require('../middleware/auth');
+const errorHandler = require('../middleware/errors');
 const noteDAO = require('../daos/note');
 
 router.post('/', auth.isLoggedIn, async (req,res,next) => {
@@ -51,21 +52,6 @@ router.get('/', auth.isLoggedIn, async (req,res,next) => {
     }
 });
 
-router.use(function (err, req, res, next) {
-    
-    if(err.message.includes('User not found') || err.message.includes('Passwords do not match') || 
-        err.message.includes('logged in') || err.message.includes('Bad Token'))
-    {
-        res.status(401).send(err.message);
-    } else if(err.message.includes('required') || err.message.includes('noteId is invalid')) {
-        res.status(400).send(err.message);
-    } else if(err.message.includes('Unauthorized')) {
-        res.status(404).send(err.message);
-    }
-     else {
-        res.status(500).send(err.message);
-    }
-})
-
+router.use(errorHandler);
 
 module.exports = router;

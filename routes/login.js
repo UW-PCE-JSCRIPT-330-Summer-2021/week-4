@@ -2,8 +2,12 @@ const { Router } = require("express");
 const router = Router();
 
 const bcrypt = require('bcrypt');
-const auth = require('../middleware/auth');
 
+//Middleware files
+const auth = require('../middleware/auth');
+const errorHandler = require('../middleware/errors');
+
+//DAOs
 const userDAO = require('../daos/user');
 const tokenDAO = require('../daos/token');
 
@@ -93,19 +97,7 @@ router.post('/logout', auth.isLoggedIn, async (req,res,next) => {
 });
 
 
-router.use(function (err, req, res, next) {
-
-    if(err.message.includes('duplicate')) {
-        res.status(409).send(`User with email ${user.email} is already signed up`);
-    } else if(err.message.includes('required')) {
-        res.status(400).send(err.message);
-    } else if(err.message.includes('User not found') || err.message.includes('Passwords do not match') || 
-        err.message.includes('logged in') || err.message.includes('Bad Token')) {
-        res.status(401).send(err.message);
-    } else {
-        res.status(500).send(err.message);
-    }
-})
+router.use(errorHandler);
 
 
 module.exports = router;
