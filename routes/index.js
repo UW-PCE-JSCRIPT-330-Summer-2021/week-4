@@ -1,18 +1,14 @@
 const { Router } = require("express");
 const router = Router();
 
-// const filter = function (path, middleware) {
-//     return function(req, res, next) {
-//         if(path === req.path) {
-//             return next();
-//         } else {
-//             return middleware(req, res, next);
-//         }
-//     }
-// }
-
-
-// router.use(filter('/login/signup',require('../middleware/checkUser')));
+/*
+    My original attempt was to utilize a "filter"
+    function that would bypass the "/signup" route
+    to validate that the request body had the necessary
+    elements for the request; however, as my testing
+    continued this proved to cause more issues and so
+    it was removed.
+*/
 router.use('/login', require('./login'));
 router.use('/notes', require('./notes'));
 

@@ -2,8 +2,6 @@ const { Router } = require("express");
 const router = Router();
 
 const auth = require('../middleware/auth');
-const User = require('../models/user');
-
 const noteDAO = require('../daos/note');
 
 router.post('/', auth.isLoggedIn, async (req,res,next) => {
@@ -11,8 +9,7 @@ router.post('/', auth.isLoggedIn, async (req,res,next) => {
     const note = req.body;
 
     try {
-        const user = await User.findOne({ _id: req.userId }).lean();
-        const newNote = await noteDAO.create(user._id, note);
+        const newNote = await noteDAO.create(req.userId, note);
         res.status(200).send(newNote);
     } catch(e) {
         next(e);
@@ -22,12 +19,9 @@ router.post('/', auth.isLoggedIn, async (req,res,next) => {
 
 router.get('/:id', auth.isLoggedIn, async (req,res,next) => {
 
-    const noteId = req.params.id;
-    const userId = req.userId;
-
     try {
 
-        const userNote = await noteDAO.getNote(userId, noteId);
+        const userNote = await noteDAO.getNote(req.userId, req.params.id);
 
         if(userNote) {
             res.status(200).send(userNote);
@@ -42,11 +36,9 @@ router.get('/:id', auth.isLoggedIn, async (req,res,next) => {
 
 router.get('/', auth.isLoggedIn, async (req,res,next) => {
 
-    const userId = req.userId;
-
     try {
         
-        const userNotes = await noteDAO.getUserNotes(userId);
+        const userNotes = await noteDAO.getUserNotes(req.userId);
 
         if(userNotes) {
             res.status(200).send(userNotes);

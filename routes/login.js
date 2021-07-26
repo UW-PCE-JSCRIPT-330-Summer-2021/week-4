@@ -8,7 +8,6 @@ const userDAO = require('../daos/user');
 const tokenDAO = require('../daos/token');
 
 
-
 router.post('/signup', async (req,res,next) => {
 
     const user = req.body;
@@ -32,8 +31,6 @@ router.post('/signup', async (req,res,next) => {
     }
 });
 
-
-
 router.post('/', async (req,res,next) => {
     
     const user = req.body;
@@ -47,17 +44,9 @@ router.post('/', async (req,res,next) => {
             if(!user.password || user.password.length === 0) {
                 throw new Error("Password is required");
             }
-    
-            // bcrypt.compare(user.password, existingUser.password, async (bErr, bRes) => {
-            //     if(bRes) {
-            //         const tokenStr = await tokenDAO.getTokenForUserEmail(user.email);
-            //         res.status(200).send({token: tokenStr});
-            //     } else {
-            //         next(new Error('Passwords do not match'));
-            //     }    
-            // });
 
             const pwdMatch = await bcrypt.compare(user.password, existingUser.password);
+
             if(pwdMatch) {
                 const tokenStr = await tokenDAO.getTokenForUserEmail(user.email);
                 res.status(200).send({token: tokenStr})
@@ -79,8 +68,7 @@ router.post('/password', auth.isLoggedIn, async (req,res,next) => {
             throw new Error("Password is required");
         }
 
-        const userId = await tokenDAO.getUserFromToken(req.token);
-        const user = await userDAO.getById(userId);
+        const user = await userDAO.getById(req.userId);
         const userEmail = user.email;
 
         const hashPWD = await bcrypt.hash(newPassword, 10);
@@ -98,7 +86,7 @@ router.post('/logout', auth.isLoggedIn, async (req,res,next) => {
 
     try {
         await tokenDAO.removeToken(req.token);
-        res.sendStatus(200)
+        res.sendStatus(200);
     } catch(e) {
             next(e);
         }    
