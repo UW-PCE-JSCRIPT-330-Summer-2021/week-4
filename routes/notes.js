@@ -1,7 +1,6 @@
 const { Router } = require('express');
 const router = Router();
 
-const { isLoggedIn } = require('../middleware/userauth');
 const errorHandler = require('../middleware/errorHandler');
 const noteDAO = require('../daos/note');
 

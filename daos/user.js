@@ -3,25 +3,13 @@ const User = require('../models/user');
 module.exports = {};
 
 module.exports.createUser = async (userObj) => {
-    try {
-        return await User.create(userObj);
-    } catch (e) {
-        throw new Error ("Could not create a user");
-    }
-}
+    return await User.create(userObj);
+};
 
 module.exports.getUser = async (email) => {
-    try {
-        return await User.findOne({ email: email }).lean();
-    } catch (e) {
-        throw new Error ("Could not find a user");
-    }
-}
+    return await User.findOne({ email }).lean();
+};
 
 module.exports.updateUserPassword = async (userId, password) => {
-    try {
-        return await User.updateOne({ _id: userId }, { $set: { password } });
-    } catch (e) {
-        throw new Error("Could not update a user\'s password");
-    }
-}
+    return await User.updateOne({ _id: userId }, { $set: { password } });
+};

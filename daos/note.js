@@ -1,14 +1,9 @@
-const mongoose = require('mongoose');
 const Note = require('../models/note');
 
 module.exports = {};
 
-module.exports.create = async (userId, noteObj) => {
-    try {
-        return await Note.create({ userId: userId, text: noteObj });
-    } catch (e) {
-        throw new Error('Not able to create a note');
-    }
+module.exports.createNote = async (userId, noteObj) => {
+    return await Note.create({ userId: userId, text: noteObj });
 }
 
 module.exports.getNote = async (userId, noteId) => {
@@ -18,7 +13,7 @@ module.exports.getNote = async (userId, noteId) => {
             throw new Error ("The note was not found");
         } return getNote;
     } catch (e) {
-        throw new Error(e.message);
+        throw new Error (e.message);
     }
 }
 
