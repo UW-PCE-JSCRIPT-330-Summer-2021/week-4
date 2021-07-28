@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-//const Note = require('../modles/note');
+//const Note = require('../models/note');
 //const Token = require('../models/token');
 const User = require('../models/user');
 

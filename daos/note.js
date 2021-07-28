@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-const Note = require('../modles/note');
+const Note = require('../models/note');
 //const Token = require('../models/token');
 //const User = require('../models/user');
 
@@ -14,14 +14,12 @@ module.exports.createNote = async(userId, noteObj) => {
 
 //getNote(userId, noteId) - should get note for userId and noteId (_id)
 module.exports.getNote = async(userId, noteId) => {
-    const note = await Note.findOne( { _id: noteId, userId: userId })
-    if (!note) {
-        throw new Error("noteId NOT found.");
-    }
-    return note;
+    const findNote = await Note.findOne( { '_id': noteId, 'userId': userId });
+    return findNote;
 }
 
 //getUserNotes(userId) - should get all notes for userId
 module.exports.getUserNotes = async(userId) => {
-    return await Note.find({ userId }).lean();
+    const userNote = await Note.find({ 'userId': userId });
+    return userNote;
 }

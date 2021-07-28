@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 
-//const Note = require('../modles/note');
+//const Note = require('../models/note');
 const Token = require('../models/token');
 //const User = require('../models/user');
 
@@ -15,11 +15,7 @@ module.exports.getTokenForUserId = async (userId) => {
 //getUserIdFromToken(tokenString) - should be an async function that returns
 //a userId string using the tokenString to get a Token record
 module.exports.getUserIdFromToken = async (tokenString) => {
-    const token = await Token.findOne({ tokenString })
-    if(!token) {
-        return null;
-    }
-    return token.userId;
+    return await Token.findOne({ tokenString }).lean();
 }
 
 //removeToken(tokenString) - an async function that deletes the corresponding
