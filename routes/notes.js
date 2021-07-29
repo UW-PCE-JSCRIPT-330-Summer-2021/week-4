@@ -30,7 +30,8 @@ const isLoggedIn = async (req, res, next) => {
 
 //NOTES (requires authentication)
 
-//Create: POST /notes
+//Create: POST /notes - if the user is logged in, it should
+//store the incoming note along with their userId.
 router.post("/", isLoggedIn, async (req, res, next) => {
     const userId = req.userId;
     const { text } = req.body;
@@ -46,7 +47,8 @@ router.post("/", isLoggedIn, async (req, res, next) => {
     }
 });
 
-//Get all of my notes: GET /notes
+//Get all of my notes: GET /notes - if the user is logged in, it should
+//get all notes for their userId.
 router.get("/", isLoggedIn, async (req,res, next) => {
     const userId = req.userId;
     if (!userId) {
@@ -61,7 +63,8 @@ router.get("/", isLoggedIn, async (req,res, next) => {
     }
 });
 
-//Get a single note: GET /notes/:id
+//Get a single note: GET /notes/:id - if the user is logged in, it should
+//get the note with the provided id and that has their userId.
 router.get("/:id", isLoggedIn, async (req, res, next) => {
     const noteId = req.params.id;
     const userId = req.userId;

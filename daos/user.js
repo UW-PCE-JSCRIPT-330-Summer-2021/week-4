@@ -8,16 +8,19 @@ module.exports = {};
 
 //createUser(userObj) - should store a user record
 module.exports.createUser = async (userObj) => {
-    return await User.create(userObj).lean();
+    const newUser = await User.create({ 'userObj': userObj });
+    return newUser;
 }
 
 //getUser(email) - should get a user record using their email
 module.exports.getUser = async (email) => {
-    return await User.findOne({ email }).lean();
+    const userEmail = await User.findOne({ 'email': email });
+    return userEmail;
 }
 
 //updateUserPassword(userId, password) - should update the user's
 //password field
 module.exports.updateUserPassword = async (userId, password) => {
-    return await User.updateOne({ _id: userId }, { $set: { password } }).lean();
+    const newPassword = await User.updateOne({ '_id': userId }, { $set: { password } });
+    return newPassword;
 }

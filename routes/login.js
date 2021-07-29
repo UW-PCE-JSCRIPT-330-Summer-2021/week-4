@@ -7,17 +7,23 @@ const tokenDAO = require('../daos/token');
 
 //MIDDLEWARE
 
-//To Validate Token
+//isLoggedIn(req, res, next) - should check if the user has a valid
+//token and if so make req.userId = the userId associated with that token.
+//The token will be coming in as a bearer token in the authorization header
+//(i.e. req.headers.authorization = 'Bearer 1234abcd') and you will need to
+//extract just the token text.
+//Any route that says "If the user is logged in" should use this
+//middleware function
 const isLoggedIn = async (req, res, next) => {
     const bearerHeader = req.headers.authorization;
     if (bearerHeader) {
-        const bearer = bearerHeader.split(' ');
-        const bearerToken = bearer[1];
-        req.token = bearerToken;
+        const bearer = bearerHeader.split(' ')[1];
+        req.token = bearer;
         if (req.token) {
             const userId = await tokenDAO.getUserIdFromToken(req.token);
             if (userId) {
-                next ();
+                req.userId = userId;
+                next();
             } else {
                 res.sendStatus(401);
             }
@@ -29,7 +35,9 @@ const isLoggedIn = async (req, res, next) => {
     }
 };
 
-//Error Handling
+//router.use(error, req, res, next) - can be used to handle errors
+//where the provided note id is not a valid ObjectId.
+//This can be done without middleware though.
 router.use(function (error, req, res, next) {
     if (error.message.includes("duplicate key")) {
         res.status(409).send('Account already exists with this email.')
@@ -40,22 +48,44 @@ router.use(function (error, req, res, next) {
 
 //LOGIN ROUTES
 
-//Signup: POST /login/signup
+//Signup: POST /login/signup - should use bcrypt on the incoming password.
+//Store user with their email and encrypted password, handle conflicts when
+//the email is already in use.
 router.post("/signup", async (req, res, next) => {
     const { email, password } = req.body;
-    if (!email || !password || password === "") {
-        res.status(400).send('Email and password are required.')
+    if (!email || email === "") {
+        res.sendStatus(400)
+    } else if (!password || password === "") {
+        res.sendStatus(400)
     } else {
         try {
-            const newUser = await userDAO.signup(email, password);
-            res.json(newUser);
+            //newSignUp checks for if there's an existing email already in use
+            //calls getUser from userDAO since getUser should store a user record using their email
+            //returns 409 conflict with a repeat sign up
+            const newSignUp = await userDAO.getUser(email);
+            if (newSignUp) {
+                res.sendStatus(409)
+            } else {
+                //saltRounds provides number of rounds
+                //genSalts asynchronously generates a salt with default of 10
+                //saltRounds = 10
+                const saltRounds = await bcrypt.genSalt(10);
+
+                //hash is to store an encrypted password using password parameters from const { email, password }
+                //and saltRounds as parameter
+                const hash = await bcrypt.hash(password, saltRounds);
+                const checkUser = await userDAO.getUser(hash);
+                res.json(checkUser)
+            }
         } catch (e) {
             next (e);
         }
     }
 });
 
-//Login: POST /login
+//Login: POST /login - find the user with the provided email.
+//Use bcrypt to compare stored password with the incoming password.
+//If they match, generate a random token with uuid and return it to the user.
 router.post("/", async (req, res, next) => {
     const { email, password } = req.body;
     const user = await userDAO.getUser(email)
@@ -81,7 +111,8 @@ router.post("/", async (req, res, next) => {
     }
 });
 
-//Logout: POST /login/logout
+//Logout: POST /login/logout - if the user is logged in, invalidate their
+//token so they can't use it again (remove it).
 router.post("/logout", isLoggedIn, async (req, res, next) => {
     try {
         await tokenDAO.removeToken(req.token);
@@ -91,7 +122,8 @@ router.post("/logout", isLoggedIn, async (req, res, next) => {
     }
 });
 
-//Change Password POST /login/password
+//Change Password POST /login/password - if the user is logged in, store
+//the incoming password using their userId.
 router.post("/password", isLoggedIn, async (req, res, next) => {
     const password = req.body.password;
     if (!password || password === '') {
