@@ -1,15 +1,10 @@
-//Similar syntax from /models/note
-
 const mongoose = require('mongoose');
 
-//Tokens are unique to one user at a time
-//Tokens expire after a certain amount of time
-//Make tokens required, as well as the userid
+//make token unique per userId
 const tokenSchema = new mongoose.Schema({
-  token: { type: String, required: true},
-  userId: { type: String, index: true, required: true }
+  token: { type: String, required: true, unique: true },
+  userId: { type: String, required: true }
 });
-
 
 //tokenSchema.index({ userId: 'text' });
 

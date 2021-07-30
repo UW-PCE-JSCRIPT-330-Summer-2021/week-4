@@ -1,13 +1,11 @@
-//Similar syntax from /models/note
-
 const mongoose = require('mongoose');
 
-//Email is to be required, and unique to each userid
+//make user email unique
+//each password corresponds to a unique email
 const userSchema = new mongoose.Schema({
-  email: { type: String, index: true, required: true, unique: true},
+  email: { type: String, required: true, unique: true },
   password: { type: String, required: true }
 });
-
 
 //userSchema.index({ email: 'text' });
 

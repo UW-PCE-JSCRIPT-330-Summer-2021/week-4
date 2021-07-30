@@ -4,32 +4,42 @@ const router = Router();
 const userDAO = require('../daos/user');
 const tokenDAO = require('../daos/token');
 
-const bcrypt = require("bcrypt");
+//uses bcrypt libray for securely storing passwords
+const bcrypt = require('bcrypt');
 
 //POST /signup -
 //should use bcrypt on the incoming password.
 //Store user with their email and encrypted password
 //handle conflicts when the email is already in use
 router.post("/signup", async (req, res, next) => {
-    const userInfo = req.body;
-    const email = userInfo.email;
-    const password = userInfo.password;
+    //email and password is accessed from the body of the request
+    const { email, password } = req.body;
 
     //check if email is entered and/or if pass is entered
-    if (!email) {
-        res.status(400).send("No email entered)");
+    if (!email || !password) {
+        //should return 400 without a password, as well as email
+        res.sendStatus(400);
     }
-    if (!password) {
-        res.status(400).send("No password entered");
+    else if (email === '' || password === '') {
+        //should return 400 with an empty password, as well as email
+        res.sendStatus(400);
     }
+    //else if password and email is not empty
+    else {
     try {
+        //get the user's email using the user DAO
         const user = await userDAO.getUser(email);
         if (user) {
-            res.status(401).send("Already used email");
+            //should return a 409 with a repeat signup
+            res.sendStatus(409);
         }
+        //else, create an encrypted password for the user using the email they provided
         else {
-            encryptedPass = await bcrypt.hash(userInfo.password, 10);
-            newUser = ({ email, password: encryptedPass });
+            //bcrypt.hash encrypts the password string entered by the user
+            const encryptedPass = await bcrypt.hash(password, 10);
+            //user's info is email and encrypted version of their password
+            const newUser = ({ email, password: encryptedPass });
+            //creates the user based on new info
             const madeUser = await userDAO.createUser(newUser);
             res.json(madeUser);
         }
@@ -37,41 +47,51 @@ router.post("/signup", async (req, res, next) => {
     catch (e) {
         next(e);
     }
+    }
 });
 
 //POST / -
 //find the user with the provided email. 
 //Use bcrypt to compare stored password with the incoming password.
 //If they match, generate a random token with uuid and return it to the user
-router.post("/", async (req, rest, next) => {
-    const userLogin = req.body;
-    const email = userLogin.email;
-    const password = userLogin.password;
-    
-    //check if login email exists
-    if (!email) {
-        res.status(401).send("Login does not exist");
+router.post("/", async (req, res, next) => {
+    //email and password is accessed from the body of the request
+    const { email, password } = req.body;
+
+    //check if login email exists or is empty
+    if (!email || email === '') {
+        //should send 401
+        res.sendStatus(401);
     }
     else {
         try {
+            //get user's email using the user DAO
             const user = await userDAO.getUser(email);
             //checks if user actually exists
             if (!user) {
-                res.status(401).send("User not found");
+                //should send 401
+                res.sendStatus(401);
             }
             else {
-                //checks to see if a password has been entered
-                if (!password) {
-                    res.status(400).send("Please enter a password");
+                //checks to see if a password has been entered or is empty
+                if (!password || password === '') {
+                    //should send 400
+                    res.sendStatus(400);
                 }
                 else {
-                    bcrypt.compare(password, user.password, async (error, results) => {
+                    //hash incoming password, and compare it to the stored hash
+                    bcrypt.compare(password, user.password, async (error, result) => {
                         //if an error pops up or no result comes up
-                        if (error || !results) {
-                            res.status(401).send("Incorrect password");
+                        //hashes don't match, entered password was wrong
+                        if (error || !result) {
+                            //should send 401
+                            res.sendStatus(401);
                         }
+                        //hashes match, entered password was correct
                         else {
+                            //gives a token to that user
                             const token = await tokenDAO.getTokenForUserId(user._id);
+                            //should send 200 and a token
                             res.status(200).send(token);
                         }
                     })
@@ -87,52 +107,80 @@ router.post("/", async (req, rest, next) => {
 
 //POST /password -
 //If the user is logged in, store the incoming password using their userId
-router.post("/password", isLoggedIn, async (req, res, next) => {
+//uses the authenticateLogin middleware to authenticate the user; verify the user for their password
+router.post("/password", authenticateLogin, async (req, res, next) => {
+    //password is the password portion of the body
     const password = req.body.password;
+    //check to see if password is entered or empty
     if (!password || password === '') {
-        res.status(400).send("Please enter a password");
+        //should send 400; reject empty password
+        res.sendStatus(400);
     }
+    //else, there is a password entered
     else {
         try {
-            const encryptedPass = await bcrypt.has(password, 10);
+            //encrypts the user's entered password
+            const encryptedPass = await bcrypt.hash(password, 10);
+            //updates the user's password with the new encrypted password
             const updateUserPass = await userDAO.updateUserPassword(req.userId, encryptedPass);
+            //should send 200 if password changed for user
+            //should send 400 if password failed to change
             res.sendStatus(updateUserPass ? 200 : 400);
         }
         
         catch (e) {
-            next(e);
+            //something did not work properly, send 500
+            res.status(500).send(e.message);
         }
     }
 });
 
 //POST /logout -
 //If the user is logged in, invalidate their token so they can't use it again (remove it)
-router.post("/logout", isLoggedIn, async (req, res, next) => {
+//uses the authenticateLogin middleware to authenticate the user; verify the user to remove their corresponding token
+router.post("/logout", authenticateLogin, async (req, res, next) => {
     try {
+        //token is given the credentials that authenticates the user
         const token = req.headers.authorization.split(' ')[1];
-        const logout = await tokenDAO.removeToken(token);
-        if (logout) {
-            res.status(200).send(logout);
-        }
+        //once user logs out, the token is removed from that user
+        const logout = tokenDAO.removeToken(token);
+        //should send 200, and removes the token from the user
+        res.status(200).send(logout);
     }
 
     catch (e) {
-        next (e);
+        //something did not work properly, send 500
+        res.status(500).send(e.message);
     }
 });
 
-async function isLoggedIn(req, res, next) {
+//authenticate middleware
+//allows us to identify the user making a request
+//we are able to find out who they are: name, email, etc.
+async function authenticateLogin(req, res, next) {
+    //token is given the credentials that authenticates the user
+    const token = req.headers.authorization;
     try {
-        if (req.headers.authorization) {
-            const token = req.headers.authorization.split (' ')[1];
-            req.token = token;
-            if (req.token) {
-                const userId = await tokenDAO.getUserIdFromToken(req.token);
-                if (userId) {
-                    res.sendStatus(200);
-                    next();
-                }
+        if (token) {
+            //split the credentials
+            const tokenString = token.split (' ')[1];
+            //get the user id corresponding to their assigned token
+            const userIdToken = await tokenDAO.getUserIdFromToken(tokenString);
+            //if no user id from token
+            if (!userIdToken) {
+                //should send 401
+                res.sendStatus(401);
             }
+            //if a user id is returned
+            else {
+                //request user id takes the value of the user id from token
+                req.userId = userIdToken.userId;
+                next();
+            }
+        }
+        else {
+            //should send 401 and let user know that they are not logged in
+            res.status(401).send("User not logged in");
         }
     }
     

@@ -8,32 +8,23 @@ module.exports = {};
 
 //should store a user record
 module.exports.createUser = async (userObj) => {
+    //creates a userObj
     const created = await User.create(userObj);
     return created;
 };
 
 //should get a user record using their email
 module.exports.getUser = async (email) => {
+    //finds a user based on their email
     return await User.findOne({ email: email });
 };
 
 //should update the user's password field
 module.exports.updateUserPassword = async (userId, password) => {
-    try {
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return false;
-        }
-        await User.updateOne({ _id: userId }, {$set: { password }});
-        return true;
-    }
-
-    catch(e) {
-        if (e.message.includes("validation failed")) {
-            throw new BadDataError(e.message);
-        }
-        throw e;
-    }
+    /*if (!mongoose.Types.ObjectId.isValid(userId)) {
+        return false;
+    }*/
+    //sets the user's password according to their userId
+    await User.updateOne({ _id: userId }, { $set: { password: password } });
+    return true;
 };
-
-class BadDataError extends Error {};
-module.exports.BadDataError = BadDataError;

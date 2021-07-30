@@ -10,35 +10,21 @@ module.exports = {};
 
 //should be an async function that returns a string ater creating a Token record
 module.exports.getTokenForUserId = async (userId) => {
-    try {
-        const created = await Token.create({ userId: userId, token: uuidv4() });
-        return created;
-    }
+    //to generate random tokens, we use the uuid library
+    //tokens with be generate randomly per userId
+    const created = await Token.create({ userId: userId, token: uuidv4() });
+    return created;
 
-    catch(e) {
-        if (e.message.includes("validation failed")) {
-            throw new BadDataError(e.message);
-        }
-        throw e;
-    }
 };
 
 //should be an async function that returns a userId string using the tokenString to get a Token record
 module.exports.getUserIdFromToken = async (tokenString) => {
-    const token = await Token.findOne({ token: tokenString });
-    if (token) {
-        return token.userId;
-    }
-    else {
-        return false;
-    }
-
+    //finds one token and returns the userId corresponding to that token
+    return await Token.findOne({ token: tokenString });
 };
 
 //an async function that deletes the corresponding Token record
 module.exports.removeToken = async (tokenString) => {
+    //deletes one token
     return await Token.deleteOne({ token: tokenString });
 };
-
-class BadDataError extends Error {};
-module.exports.BadDataError = BadDataError;
