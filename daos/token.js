@@ -1,32 +1,45 @@
 const mongoose = require('mongoose');
 
-//v4 UUID are generated randomly and with no inherent logic
-const { v4: uuidv4 } = require('uuid');
-
-//const Note = require('../models/note');
+const Note = require('../models/note');
 const Token = require('../models/token');
-//const User = require('../models/user');
+const User = require('../models/user');
 
 module.exports = {};
 
 //getTokenForUserId(userId) - should be an async function that returns
 //a string after creating a Token record
 module.exports.getTokenForUserId = async (userId) => {
-    const uuidToken = uuidv4();
-    const tokenForUser = await Token.findOne({ 'userId': userId, 'uuidToken': uuidToken });
-    return tokenForUser;
+    try {
+        const user = await Token.findOne({
+            userId: userId
+        })
+        return user.token;
+    } catch (e) {
+        throw e;
+    }
 }
 
 //getUserIdFromToken(tokenString) - should be an async function that returns
 //a userId string using the tokenString to get a Token record
 module.exports.getUserIdFromToken = async (tokenString) => {
-    const getUserFromToken = await Token.findOne({ 'tokenString': tokenString });
-    return getUserFromToken;
+    const token = await Token.findOne({
+        token: tokenString
+    });
+    if (token) {
+        return token.userId;
+    } else {
+        return false;
+    }
 }
 
-//removeToken(tokenString) - an async function that deletes the corresponding
-//Token record
+//removeToken(tokenString) - an async function that deletes the corresponding Token record
 module.exports.removeToken = async (tokenString) => {
-    const removeUserToken = await Token.deleteOne({ 'tokenString': tokenString })
-    return removeUserToken;
+    try {
+        await Token.deleteOne({
+            token: tokenString
+        });
+        return true;
+    } catch (e) {
+        throw e;
+    }
 }

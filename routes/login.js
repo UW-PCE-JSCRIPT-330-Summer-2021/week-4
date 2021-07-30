@@ -1,9 +1,11 @@
-const { Router } = require("express");
+const { Router, query } = require("express");
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const router = Router();
 
-const userDAO = require('../daos/user');
+const noteDAO = require('../daos/note');
 const tokenDAO = require('../daos/token');
+const userDAO = require('../daos/user');
 
 //MIDDLEWARE
 
@@ -35,17 +37,6 @@ const isLoggedIn = async (req, res, next) => {
     }
 };
 
-//router.use(error, req, res, next) - can be used to handle errors
-//where the provided note id is not a valid ObjectId.
-//This can be done without middleware though.
-router.use(function (error, req, res, next) {
-    if (error.message.includes("duplicate key")) {
-        res.status(409).send('Account already exists with this email.')
-    } else {
-        res.sendStatus(500)
-    }
-});
-
 //LOGIN ROUTES
 
 //Signup: POST /login/signup - should use bcrypt on the incoming password.
@@ -53,32 +44,19 @@ router.use(function (error, req, res, next) {
 //the email is already in use.
 router.post("/signup", async (req, res, next) => {
     const { email, password } = req.body;
-    if (!email || email === "") {
-        res.sendStatus(400)
-    } else if (!password || password === "") {
-        res.sendStatus(400)
+    if (!email || !password || password === "" || email === "") {
+        res.status(400).send('Email and password are required');
     } else {
         try {
-            //newSignUp checks for if there's an existing email already in use
-            //calls getUser from userDAO since getUser should store a user record using their email
-            //returns 409 conflict with a repeat sign up
             const newSignUp = await userDAO.getUser(email);
             if (newSignUp) {
-                res.sendStatus(409)
+                res.sendStatus(409);
             } else {
-                //saltRounds provides number of rounds
-                //genSalts asynchronously generates a salt with default of 10
-                //saltRounds = 10
-                const saltRounds = await bcrypt.genSalt(10);
-
-                //hash is to store an encrypted password using password parameters from const { email, password }
-                //and saltRounds as parameter
-                const hash = await bcrypt.hash(password, saltRounds);
-                const checkUser = await userDAO.getUser(hash);
-                res.json(checkUser)
+                const newUser = await userDAO.signup(email, password);
+                res.json(newUser);
             }
         } catch (e) {
-            next (e);
+            next(e);
         }
     }
 });
@@ -88,23 +66,23 @@ router.post("/signup", async (req, res, next) => {
 //If they match, generate a random token with uuid and return it to the user.
 router.post("/", async (req, res, next) => {
     const { email, password } = req.body;
-    const user = await userDAO.getUser(email)
+    const user = await userDAO.getUser(email);
     if (!user) {
-        res.status(401).send('User does not exist.')
+        res.status(401).send('User does not exist');
     } else {
         if (!password || password === "") {
-            res.status(400).send('Password required.');
+            res.status(400).send('Password required');
         } else {
             const user = await userDAO.getUser(email);
-            const passwordMatch = await bcrypt.compare(password, user.password);
-            if (!passwordMatch) {
-                res.status(401).send('Wrong password.');
+            const matchPassword = await bcrypt.compare(password, user.password);
+            if (!matchPassword) {
+                res.status(401).send('Incorrect password');
             } else {
                 try {
-                    const userToken = await userDAO.assignUserToken(user._id)
-                    res.json(userToken)
+                    const userToken = await userDAO.assignUserToken(user._id);
+                    res.json(userToken);
                 } catch (e) {
-                    next (e);
+                    next(e);
                 }
             }
         }
@@ -114,28 +92,50 @@ router.post("/", async (req, res, next) => {
 //Logout: POST /login/logout - if the user is logged in, invalidate their
 //token so they can't use it again (remove it).
 router.post("/logout", isLoggedIn, async (req, res, next) => {
-    try {
-        await tokenDAO.removeToken(req.token);
-        res.status(200).send('Token deleted.');
-    } catch (e) {
-        next (e);
+    const userToken = req.token;
+    const tokenDeleted = await tokenDAO.removeToken(userToken);
+    if (tokenDeleted) {
+        res.status(200).send('Token deleted');
+    } else {
+        res.status(401).send('User not found for token');
     }
 });
 
 //Change Password POST /login/password - if the user is logged in, store
 //the incoming password using their userId.
 router.post("/password", isLoggedIn, async (req, res, next) => {
-    const password = req.body.password;
-    if (!password || password === '') {
-        res.sendStatus(400);
+    const userId = await tokenDAO.getUserIdFromToken(req.token);
+    if (!userId) {
+        res.status(401).send('Invalid token');
     } else {
-        try {
-            const bcryptPassword = await bcrypt.hash(password, 10);
-            const pass = await userDAO.updateUserPassword(req.userId, bcryptPassword);
-            res.sendStatus(pass ? 200 : 400);
-        } catch (e) {
-            res.status(500).send(e.message);
+        const { password } = req.body;
+        if (!password || password === "") {
+            res.status(400).send('Password required');
+        } else {
+            try {
+                const updatedUser = await userDAO.updateUserPassword(userId, password);
+                res.sendStatus(200);
+            } catch (e) {
+                res.sendStatus(401);
+            }
         }
+    }
+});
+
+//ERROR HANDLER
+
+//router.use(error, req, res, next) - can be used to handle errors
+//where the provided note id is not a valid ObjectId.
+//This can be done without middleware though.
+router.use(function (error, req, res, next) {
+    if (error.message.includes("invalid")) {
+        res.status(400).send('Invalid ID');
+    } else if (error.message.includes("token")) {
+        res.sendStatus(401);
+    } else if (error.message.includes("duplicate")) {
+        res.status(409).send('Account already exists');
+    } else {
+        res.sendStatus(500);
     }
 });
 
