@@ -7,7 +7,7 @@ const tokenDAO = require('../daos/token');
 //POST / -
 //If the user is logged in, it should store the incoming note along with their userId
 ////uses the authenticateLogin middleware to authenticate the user; to create notes depending on user
-router.post("/", authenticateLogin, async (req, res, next) => {
+router.post("/", isLoggedIn, async (req, res, next) => {
     try {
         //creates notes using the note DAO
         const notes = await noteDAO.createNote(req.userId, req.body);
@@ -23,7 +23,7 @@ router.post("/", authenticateLogin, async (req, res, next) => {
 //GET / -
 //If the user is logged in, it should get all notes for their userId
 //uses the authenticateLogin middleware to authenticate the user; to get all notes depending on user
-router.get("/", authenticateLogin, async (req, res, next) => {
+router.get("/", isLoggedIn, async (req, res, next) => {
     try {
         //gets all notes depending on user id using the note DAO
         const notes = await noteDAO.getUserNotes(req.userId);
@@ -39,7 +39,7 @@ router.get("/", authenticateLogin, async (req, res, next) => {
 //GET /:id -
 //If the user is logged in, it should get the note with the provided id and that has their userId
 //uses the authenticateLogin middleware to authenticate the user; to get specific not depending on user
-router.get("/:id", authenticateLogin, async (req, res, next) => {
+router.get("/:id", isLoggedIn, async (req, res, next) => {
     try {
         //gets specific note depending on user id and note id using the note DAO
         const notes = await noteDAO.getNote(req.userId, req.params.id);
@@ -66,7 +66,7 @@ router.get("/:id", authenticateLogin, async (req, res, next) => {
 //authenticate middleware
 //allows us to identify the user making a request
 //we are able to find out who they are: name, email, etc.
-async function authenticateLogin(req, res, next) {
+async function isLoggedIn(req, res, next) {
     //token is given the credentials that authenticates the user
     const token = req.headers.authorization;
     try {

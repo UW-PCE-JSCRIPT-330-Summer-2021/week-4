@@ -108,7 +108,7 @@ router.post("/", async (req, res, next) => {
 //POST /password -
 //If the user is logged in, store the incoming password using their userId
 //uses the authenticateLogin middleware to authenticate the user; verify the user for their password
-router.post("/password", authenticateLogin, async (req, res, next) => {
+router.post("/password", isLoggedIn, async (req, res, next) => {
     //password is the password portion of the body
     const password = req.body.password;
     //check to see if password is entered or empty
@@ -138,7 +138,7 @@ router.post("/password", authenticateLogin, async (req, res, next) => {
 //POST /logout -
 //If the user is logged in, invalidate their token so they can't use it again (remove it)
 //uses the authenticateLogin middleware to authenticate the user; verify the user to remove their corresponding token
-router.post("/logout", authenticateLogin, async (req, res, next) => {
+router.post("/logout", isLoggedIn, async (req, res, next) => {
     try {
         //token is given the credentials that authenticates the user
         const token = req.headers.authorization.split(' ')[1];
@@ -157,7 +157,7 @@ router.post("/logout", authenticateLogin, async (req, res, next) => {
 //authenticate middleware
 //allows us to identify the user making a request
 //we are able to find out who they are: name, email, etc.
-async function authenticateLogin(req, res, next) {
+async function isLoggedIn(req, res, next) {
     //token is given the credentials that authenticates the user
     const token = req.headers.authorization;
     try {
