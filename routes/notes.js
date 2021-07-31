@@ -6,12 +6,22 @@ const noteDAO = require('../daos/note');
 
 router.use(isLoggedIn);
 
+router.post("/", async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const note = req.body;
+    const savedNote = await noteDAO.createNote(userId, note);
+    res.json(savedNote);
+  } catch (e) {
+    next(e);
+  }
+});
 
 router.get("/", async (req, res, next) => {
   try {
-    const userId = req.body;
-    const notes = await noteDAO.getUserNotes(userId);
-    res.json(notes);
+    const userId = req.userId;
+    const savedNotes = await noteDAO.getUserNotes(userId);
+    res.json(savedNotes);
   } catch (e) {
     next(e);
   }
@@ -19,32 +29,22 @@ router.get("/", async (req, res, next) => {
 
 router.get("/:id", async (req, res, next) => {
   try {
-    const userId = req.body;
+    const userId = req.userId;
     const noteId = req.params.id;
-    const notes = await noteDAO.getNote(userId, noteId);
-    res.json(notes);
+    const note = await noteDAO.getNote(userId, noteId);
+    if (!note) {
+      res.status(404).send('Note not found');
+    } else {
+    res.json(note);
+    }
   } catch (e) {
+    if (e.message.includes("ObjectId failed")){
+    res.sendStatus(400);
+    }
     next(e);
   }
 });
 
-router.post("/", async (req, res, next) => {
-  try {
-    const newNote = req.body;
-    const userId = newNote.userId;
-    if (!notes || JSON.stringify(notes) === '{}') {
-      res.status(400).send('user is required');
-    } else {
-      const savedNote = await noteDAO.createNote(userId, newNote);
-      res.json(savedNote);
-    }
-  } catch (e) {
-    if (e.message.includes('validation failed:')) {
-      res.status(400).send(e.message);
-    } else {
-      res.status(500).send('Unexpected Server Error');
-    }
-  }
-});
+
 
 module.exports = router;

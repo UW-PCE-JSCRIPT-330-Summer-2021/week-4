@@ -2,21 +2,16 @@ const Note = require('../models/note');
 
 module.exports = {};
 
-module.exports.getUserNotes = async (userId) => {
-    const notes = await Note.find({ userId: userId });
-    return notes;
+module.exports.getUserNotes = (userId) => {
+    return Note.find({ userId: userId }).lean();
 }
 
-module.exports.getNote = async (userId, noteId) => {
-    const note = await Note.findOne({ _id: noteId, userId: userId }).lean();
-    if(!note){
-        throw new Error('Not found');
-    }
-    return note;
+module.exports.getNote = (userId, noteId) => {
+    return Note.findOne({ _id: noteId, userId: userId }).lean();
 }
 
-module.exports.createNote = async (userId, noteObj) => {
-    return await Note.create({
+module.exports.createNote = (userId, noteObj) => {
+    return Note.create({
         userId: userId,
         text: noteObj.text
     });

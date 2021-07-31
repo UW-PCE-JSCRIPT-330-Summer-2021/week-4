@@ -8,35 +8,29 @@ const userDAO = require('../daos/user');
 const tokenDAO = require('../daos/token');
 
 
-// router.get("/", async (req, res, next) => {
-//   try {
-//     const users = await userDAO.getAll();
-//     res.json(users);
-//   } catch (e) {
-//     next(e);
-//   }
-// });
-
 router.post("/", async (req, res, next) => {
   try {
     const user = req.body;
-    if (!user || JSON.stringify(user) === '{}') {
-      res.status(400).send('user is required');
+    if (!user.email) {
+      res.status(400).send("Please porvide correct email");
+    }
+    if (!user.password || user.password == null) {
+      res.status(400).send("Please porvide correct password");
     } else {
       const savedUser = await userDAO.getUser(user.email);
       const checkMatch = await bcrypt.compare(user.password, savedUser.password);
       if (!checkMatch) {
-        res.status(404).send('Unauthorized - Wrong password');
+        res.status(401).send('Unauthorized - Wrong password');
       } else {
         const token = await tokenDAO.getTokenForUserId(savedUser._id);
-        res.status(200).send(token);
+        res.json(token);
       }
     }
   } catch (e) {
-    if (e.message.includes('validation failed:')) {
-      res.status(400).send(e.message);
+    if (e.message.includes('Cannot read property')) {
+      res.status(401).send(e.message);
     } else {
-      res.status(500).send('Unexpected Server Error');
+      next(e);
     }
   }
 });
@@ -44,12 +38,18 @@ router.post("/", async (req, res, next) => {
 
 router.post("/signup", async (req, res, next) => {
   try {
-    //bcrypt password
     const user = req.body;
     const userEmail = user.email;
     const userPassword = user.password;
-    if (!user || JSON.stringify(user) === '{}') {
-      res.status(400).send('user is required');
+    const userSignedUp = await userDAO.getUser(userEmail);
+    if (userSignedUp) {
+      res.sendStatus(409);
+    }
+    if (!userEmail || userEmail.length === 0) {
+      res.sendStatus(400);
+    }
+    if (!userPassword || userPassword.length === 0) {
+      res.sendStatus(400);
     } else {
       const encryptedPassword = await bcrypt.hash(userPassword, 10);
       const signupInfo = ({ email: userEmail, password: encryptedPassword });
@@ -57,11 +57,7 @@ router.post("/signup", async (req, res, next) => {
       res.json(savedUser);
     }
   } catch (e) {
-    if (e.message.includes('validation failed:')) {
-      res.status(400).send(e.message);
-    } else {
-      res.status(500).send('Unexpected Server Error');
-    }
+    next(e);
   }
 });
 
@@ -69,39 +65,26 @@ router.use(isLoggedIn);
 
 router.post("/logout", async (req, res, next) => {
   try {
-    const user = req.body;
-    if (!user || JSON.stringify(user) === '{}') {
-      res.status(400).send('user is required');
-    } else {
-      const savedUser = await userDAO.createUser(user);
-      res.json(savedUser);
-    }
+    await tokenDAO.removeToken(req.tokenString);
+    res.sendStatus(200);
   } catch (e) {
-    if (e.message.includes('validation failed:')) {
-      res.status(400).send(e.message);
-    } else {
-      res.status(500).send('Unexpected Server Error');
-    }
+    next(e);
   }
 });
 
 router.post("/password", async (req, res, next) => {
   try {
     const password = req.body.password;
-    const userId =  req.userId;
+    const userId = req.userId;
     if (!password || password.length < 1) {
-      res.status(400).send('user is required');
+      res.status(400).send('password is required');
     } else {
       const encryptedPassword = await bcrypt.hash(password, 10);
       const updated = await userDAO.updateUserPassword(userId, encryptedPassword);
       res.json(updated);
     }
   } catch (e) {
-    if (e.message.includes('validation failed:')) {
-      res.status(400).send(e.message);
-    } else {
-      res.status(500).send('Unexpected Server Error');
-    }
+    next(e);
   }
 });
 

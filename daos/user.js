@@ -2,31 +2,15 @@ const User = require('../models/user');
 
 module.exports = {};
 
-module.exports.createUser = async (userObj) => {
-    try {
-        const user = await User.create(userObj)
-        return user;
-    } catch (e) {
-        return null;
-    }
+module.exports.createUser = (userObj) => {
+    return User.create(userObj)
+
 }
 
-module.exports.getUser = async (email) => {
-    try {
-        return await User.findOne({ email: email }).lean();
-    } catch (e) {
-        return null;
-    }
+module.exports.getUser = (email) => {
+    return User.findOne({ email: email }).lean();
 }
 
-module.exports.updateUserPassword = async (userId, password) => {
-    try {
-        return await User.updateOne({ _id: userId }, { $set: { 'password': password } });
-    } catch (e) {
-        return null;
-    }
-}
-
-module.exports.getAll = () => {
-    return User.find().lean();
+module.exports.updateUserPassword = (userId, password) => {
+    return User.updateOne({ _id: userId }, { $set: { 'password': password } });
 }
