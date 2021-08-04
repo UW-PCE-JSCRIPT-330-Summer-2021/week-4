@@ -3,13 +3,25 @@ const User = require('../models/user');
 module.exports = {};
 
 module.exports.createUser = async (userObj) => {
-    return await User.create(userObj);
-};
+    try {
+        return await User.create(userObj);
+    } catch (e) {
+      return null;
+    }
+}
 
 module.exports.getUser = async (email) => {
-    return await User.findOne({ email }).lean();
-};
-
+    try {
+        return await User.findOne({ email: email }).lean();
+    } catch (e) {
+      next(e);
+    }
+}
+  
 module.exports.updateUserPassword = async (userId, password) => {
-    return await User.updateOne({ _id: userId }, { $set: { password } });
-};
+    try {
+      return await User.updateOne({ _id: userId }, { $set: { password: password }});
+    } catch (e) {
+      next(e);
+    }
+}

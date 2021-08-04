@@ -6,80 +6,105 @@ const bcrypt = require('bcrypt');
 const userDAO = require('../daos/user');
 const tokenDAO = require('../daos/token');
 
-const errorHandler = require('../middleware/errorHandler');
-
 router.post("/signup", async (req, res, next) => {
     try {
-        const currentUser = await userDAO.getByEmail(req.body.email);
+        const user = req.body;
+        const email = user.email;
+        const password = user.password;
 
-        if (!req.body || JSON.stringify(req.body) === '{}') {
-            throw new Error('The user is required');
-        } else if (!req.body.email || JSON.stringify(req.body.email) === '{}') {
-            throw new Error('An email is required');
-        } else if (!req.body.password || req.body.password.length === 0) {
-            throw new Error('User\'s password is required');
-        } else if (currentUser) {
-            throw new Error('This user is already exist');
+        if (!email || !password || JSON.stringify(email) === '{}' || JSON.stringify(password) === '{}') {
+            res.sendStatus(400);
+        }
+
+        const currentUser = await userDAO.getUser(email);
+
+        if (currentUser) {
+            res.sendStatus(409);
         } else {
-            const hashedPassword = await bcrypt.hash(req.body.password, 7);
-            const hashedUser = await userDAO.createUser({ email: req.body.email, password: hashedPassword });
-            res.json(200).send(hashedUser);
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const hashedUser = await userDAO.createUser({ email, password: hashedPassword });
+            res.json(hashedUser);
         }
     } catch (e) {
-        next (e);
+        next(e);
     }
 });
 
 router.post("/", async (req, res, next) => {
     try {
-        const currentUser = await userDAO.getByEmail(req.body.email);
+        const user = req.body;
+        const email = user.email;
+        const password = user.password;
 
-        if (!currentUser) {
-            throw new Error('The user is not found');
-        } else {
-            if (!req.body.password || req.body.password.length === 0) {
-                throw new Error('User\'s password is required');
-            }
-            const passwordMatching = await bcrypt.compare(req.body.password, currentUser.password);
-            
-            if (passwordMatching) {
-                const userToken = await tokenDAO.getTokenForUserId(req.body.email);
-                res.status(200).send({ tokenString: userToken });
-            } else {
-                throw new Error('Passwords do not match');
-            }
-        } 
-    } catch (e) {
-        next (e);
-    }
-});
-
-router.post('/password', async (req, res, next) => {
-    try {
-        if (!req.body.password || req.body.password.length === 0) {
-            throw new Error('Password is required');
+        if (!email || !password || JSON.stringify(email) === '{}' || JSON.stringify(password) === '{}') {
+            res.sendStatus(400);
         }
 
-        const currentUser = await userDAO.getById(req.userId);
-        const hashedPassword = await bcrypt.hash(req.body.password, 7);
-        const temporaryUser = { email: currentUser.email, password: hashedPassword };
-        const hashedUser = await userDAO.updateUserPassword(temporaryUser);
-        res.json(hashedUser); 
+        const currentUser = await userDAO.getUser(email);
 
+        if (!currentUser) {
+            res.sendStatus(401);
+        }
+
+        const passwordMatching = await bcrypt.compare(password, currentUser.password);
+        if (!passwordMatching) {
+            res.sendStatus(401);
+        } else {
+            const userToken = await tokenDAO.getTokenForUserId(currentUser._id);
+            res.json(userToken);
+        }
     } catch (e) {
-        next (e);
+        next(e);
     }
 });
 
-router.post('/logout', async (req, res, next) => {
+router.post("/password", isLoggedIn, async (req, res, next) => {
     try {
-        await tokenDAO.removeToken(req.token);
-        res.status(200).send('OK');
+        const password = req.body.password;
+
+        if (!password || JSON.stringify(password) === '{}') {
+            res.sendStatus(400);
+        } else {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const newPassword = await userDAO.updateUserPassword(req.userId, hashedPassword);
+            res.json(newPassword);
+        }
     } catch (e) {
+        res.sendStatus(401);
+        next(e);
+    }
+});
+
+router.post("/logout", isLoggedIn, async (req, res, next) => {
+    try {
+        const createdToken = req.headers.authorization.split(' ')[1];
+        const removeToken = await tokenDAO.removeToken(createdToken);
+        res.json(removeToken);
+    } catch (e) {
+        res.sendStatus(401);
         next (e);
     }
 });
 
-router.use(errorHandler);
+async function isLoggedIn(req, res, next) {    
+    try {
+        const userToken = req.headers.authorization;
+        if (userToken) {
+            const callbackToken = userToken.split(' ')[1];
+            const userId = await tokenDAO.getUserIdFromToken(callbackToken);
+
+            if (userId) {
+                req.userId = userId.userId;
+                next();
+            } else {
+                res.sendStatus(401);
+            }
+        } else {
+            res.sendStatus(401);
+        } 
+    } catch (e) {
+        next(e);
+    }
+};
 
 module.exports = router;

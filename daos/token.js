@@ -5,18 +5,24 @@ module.exports = {};
 
 module.exports.getTokenForUserId = async (userId) => {
     try {
-        const userToken = await Token.create({ userId, tokenString: uuid.v4() });
-        return userToken.tokenString;
+        return await Token.create({ userId: userId, token: uuid.v4() });
     } catch (e) {
-        throw new Error (e.message);
+        next(e);
     }
 }
 
 module.exports.getUserIdFromToken = async (tokenString) => {
-    const userToken = await Token.findOne({ tokenString }).lean();
-    return userToken.userId;
+    try {
+        return await Token.findOne({ token: tokenString }).lean();
+    } catch (e) {
+        next(e);
+    }
 }
 
 module.exports.removeToken = async (tokenString) => {
-    return await Token.deleteOne({ tokenString });
+    try {
+        return await Token.deleteOne({ token: tokenString });
+    } catch (e) {
+        next(e);
+    }
 }
