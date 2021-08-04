@@ -20,7 +20,7 @@ describe("/login", () => {
     email: 'user1@mail.com',
     password: '456password'
   }
-
+/* 
   describe("before signup", () => {
     describe("POST /", () => {
       it("should return 401", async () => {
@@ -42,7 +42,7 @@ describe("/login", () => {
         expect(res.statusCode).toEqual(401);
       });
     });
-  });
+  }); */
   
   describe("signup ", () => {
     describe("POST /signup", () => {
@@ -112,7 +112,7 @@ describe("/login", () => {
         });
       });
     });
-  });
+  });/* 
   describe("After both users login", () => {
     let token0;
     let token1;
@@ -217,5 +217,5 @@ describe("/login", () => {
         expect(res1.statusCode).toEqual(401);
       });
     });
-  });
+  }); */
 });
