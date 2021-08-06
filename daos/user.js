@@ -15,8 +15,8 @@ module.exports = {};
     return User.findOne({ _id: userId }).lean();
   }
   
-  module.exports.getByLogin = (email, password) => {
-    return User.findOne({email: email, password: password }).lean();
+  module.exports.getByLogin = (email) => {
+    return User.findOne({email: email});
   }
   /*
   module.exports.deleteById = async (authorId) => {

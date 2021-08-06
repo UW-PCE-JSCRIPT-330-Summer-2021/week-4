@@ -1,6 +1,10 @@
 const { Router } = require("express");
 const router = Router();
 
+const jwt = require('jsonwebtoken');
+const secret = 'KEQZOjws7PPb2pPoFIIn';
+
+
 const bCrypt = require('bcrypt');
 
 /* const bCryptMid = require("/middleware/bCrypt") */
@@ -11,28 +15,10 @@ const token = require("../models/token");
 
 router.use(async (req, res, next) => {
     console.log(`${req.method} ${req.url} at ${new Date()}`);
+    req.salt = await bCrypt.genSalt(10);
+    console.log(req.salt);
     next();
   });
-  
-router.use(async (req, res, next) => {
-  const user = req.body;
-  
-  try {
-    const salt = await bCrypt.genSalt(10);
-    if (user.email && user.password) 
-    {
-      const hash = bCrypt.hash(user.password, salt);
-      const password = (await hash).toString();
-      const newUser = await userDAO.getByLogin(user.email, password);
-      req.user = newUser;
-      //TODO: set token with JWT
-    }
-  } catch(e) {
-    
-    next(e);
-  }
-  next();
-});
     
 /* hash = async (password) => {
   return bcrypt.hash(password, 7).then(logHash);
@@ -55,10 +41,9 @@ router.post("/signup", async (req, res, next) => {
   const user = req.body;
   
   try {
-    const salt = await bCrypt.genSalt(10);
     if (user.email && user.password) 
     {
-      const hash = bCrypt.hash(user.password, salt);
+      const hash = bCrypt.hash(user.password, req.salt);
       user.password = (await hash).toString();
     }
     let newUser = await userDAO.create(user);
@@ -68,6 +53,25 @@ router.post("/signup", async (req, res, next) => {
     next(e);
   }
   next();
+});
+  
+router.use(async (req, res, next) => {
+  const user = req.body;
+  
+   try {
+    if (user) 
+    {
+      //const hash = bCrypt.hash(user.password, req.salt);
+      //const password = (await hash).toString();
+      const newUser = await userDAO.getByLogin(user.email);
+
+        req.user = newUser;
+        next(); 
+    }
+  } catch(e) {
+    
+    next(e);
+  }
 });
 
 
@@ -108,14 +112,24 @@ router.get("/:id", async (req, res, next) => {
   // Read - all authors
   router.post("/", async (req, res, next) => {
     try {
-      if (req.user.token) {
-        // TODO: return token after veriified in JWT
-        return;
+      if (!req.body.password){
+        throw new Error('Password is required');
       }
+
+      let compareSuccess = await bCrypt.compare(req.body.password, req.user.password);
+      console.log("I'm here", compareSuccess);
+      if (!compareSuccess) {
+        console.log('Password match failed.')
+        throw new Error('Password match failed');
+      }
+
+      // user record in req.user
+      const data  = { userId: req.user._id, email: req.user.email }
+      let token = jwt.sign(data, secret);
+      res.json({token});
     } catch (e) {
       next(e);
     }
-    next();
   });/*
   
   // Update
@@ -153,12 +167,12 @@ router.get("/:id", async (req, res, next) => {
     console.log(err);
     if (err.message.includes("Cast to ObjectId failed")) {   
         res.status(400).send('Invalid id provided');  
-    } else if (err.message.includes("password: Password is required")) {   
+    } else if (err.message.includes("Password is required") || err.message.includes("data and salt arguments required") || err.message.includes("password is not defined")) {   
         res.status(400).send('Password is required');
     } else if (err.message.includes("duplicate key")) {   
         res.status(409).send('Email already in use.');
-    } else if (err.message.includes("password is not defined")) {   
-        res.status(400).send("Password doesn't match");
+    } else if (err.message.includes("Password match failed")) {   
+        res.status(401).send("Password doesn't match");
     } else {    
         res.status(500).send('Something broke!')  
     }

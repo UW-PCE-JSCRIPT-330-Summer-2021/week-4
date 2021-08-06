@@ -21,7 +21,9 @@
   "dependencies": {
     "bcrypt": "^5.0.1",
     "express": "^4.17.1",
-    "mongoose": "^5.12.14"
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.12.14",
+    "save": "^2.4.0"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^1.2.5",
