@@ -4,18 +4,18 @@ const Note = require('../models/note');
 
 module.exports = {};
 
-module.exports.getById = (userId) => {
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return null;
-    }
-    return User.findOne({ _id: userId }).lean();
+/*module.exports.getById = (userId) => {
+   if (!mongoose.Types.ObjectId.isValid(userId)) {
+    return null;
+  }
+  return User.findOne({ _id: userId }).lean();
+} */
+  
+  module.exports.getByUserId = (userId) => {
+    return Note.find({userId: userId});
   }
   
-  module.exports.getByLogin = (email) => {
-    return User.findOne({email: email});
-  }
-  
-  module.exports.getByIdAndEmail = (userId, email) => {
+ /*  module.exports.getByIdAndEmail = (userId, email) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return null;
     }
@@ -28,7 +28,7 @@ module.exports.getById = (userId) => {
     }
     await User.updateOne({ _id: userId }, newObj);
     return true;
-  } 
+  }  */
   
   module.exports.create = async (noteData) => {
     try {

@@ -59,14 +59,15 @@ router.post("/", async (req, res, next) => {
     }
   });
 
-/* router.get("/", async (req, res, next) => {
-    let { page, perPage } = req.query;
-    page = page ? Number(page) : 0;
-    perPage = perPage ? Number(perPage) : 10;
-    const notes = await notesDAO.getAll(page, perPage);
-    res.json(notes);
+ router.get("/", async (req, res, next) => {
+    try {
+        const notes = await notesDAO.getByUserId(req.payload.userId);
+        res.json(notes);
+    } catch(e) {      
+        next(e);
+    }
 });
-
+/*
 router.get("/:id", async (req, res, next) => {
     let { page, perPage } = req.query;
     page = page ? Number(page) : 0;
