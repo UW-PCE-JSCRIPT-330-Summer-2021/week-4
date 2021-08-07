@@ -130,6 +130,53 @@ router.get("/:id", async (req, res, next) => {
     } catch (e) {
       next(e);
     }
+  });
+
+  router.use(async (req, res, next) => {
+    try {
+      const AuthHeader = req.headers.authorization;
+      if (AuthHeader) {
+        if (typeof(AuthHeader !== 'undefined')){
+          const auth = AuthHeader.split(' ');
+          req.token = auth[1];
+        }
+
+        req.tokenIsValid = jwt.verify(req.token, secret);
+        if (req.tokenIsValid){
+          const decoded = jwt.decode(req.token);
+
+          req.payload = decoded;
+        }
+      }
+      next();
+    } catch (e) {
+      next(e);
+    }
+  });
+  
+  router.post("/password", async (req, res, next) => {
+    try {
+      if (!req.body.password){
+        throw new Error('Password is required');
+      }
+      if (!req.tokenIsValid) { 
+        throw new Error('Token is Invalid');
+        
+      } else if (req.payload.email && req.payload.userId) {
+        const hash = bCrypt.hash(req.body.password, req.salt);
+        const newPasswordHash = (await hash).toString();
+        const data = { password: newPasswordHash}
+
+        let updatedUser = await userDAO.updateById(req.payload.userId, data);
+
+        // TODO: Return a new token.
+        const updateData  = { userId: updatedUser._id, email: updatedUser.email }
+        let token = jwt.sign(updateData, secret);
+        res.json({token});
+      }
+    } catch (e) {
+      next(e);
+    }
   });/*
   
   // Update
@@ -173,6 +220,8 @@ router.get("/:id", async (req, res, next) => {
         res.status(409).send('Email already in use.');
     } else if (err.message.includes("Password match failed")) {   
         res.status(401).send("Password doesn't match");
+    } else if (err.message.includes("Token is Invalid")) {   
+        res.status(401).send("Token is Invalid");
     } else {    
         res.status(500).send('Something broke!')  
     }

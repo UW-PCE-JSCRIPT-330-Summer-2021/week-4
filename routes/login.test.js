@@ -112,7 +112,7 @@ describe("/login", () => {
         });
       });
     });
-  });/* 
+  });
   describe("After both users login", () => {
     let token0;
     let token1;
@@ -126,7 +126,7 @@ describe("/login", () => {
     });
 
     describe("POST /password", () => {
-      it("should reject bogus token", async () => {
+/*       it("should reject bogus token", async () => {
         const res = await request(server)
           .post("/login/password")
           .set('Authorization', 'Bearer BAD')
@@ -139,7 +139,7 @@ describe("/login", () => {
           .set('Authorization', 'Bearer ' + token0)
           .send({ password: '' });
         expect(res.statusCode).toEqual(400);
-      });
+      }); */
       it("should change password for user0", async () => {
         const res = await request(server)
           .post("/login/password")
@@ -156,7 +156,7 @@ describe("/login", () => {
         const loginRes1 = await request(server).post("/login").send(user1);
         expect(loginRes1.statusCode).toEqual(200);
       });
-      it("should change password for user1", async () => {
+      /* it("should change password for user1", async () => {
         const res = await request(server)
           .post("/login/password")
           .set('Authorization', 'Bearer ' + token1)
@@ -171,10 +171,10 @@ describe("/login", () => {
           password: '123'
         });
         expect(loginRes1.statusCode).toEqual(200);
-      });
+      }); */
      
     });
-    describe("POST /logout", () => {
+    /* describe("POST /logout", () => {
       it("should reject bogus token", async () => {
         const res = await request(server)
           .post("/login/logout")
@@ -216,6 +216,6 @@ describe("/login", () => {
           .send({ password: '123' });
         expect(res1.statusCode).toEqual(401);
       });
-    });
-  }); */
+    }); */
+  });
 });
