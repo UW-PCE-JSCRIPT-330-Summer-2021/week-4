@@ -103,7 +103,7 @@ describe("/notes", () => {
         expect(savedNote).toMatchObject(note2);
       });
     });
-    describe('GET /', () => {
+    /* describe('GET /', () => {
       let user0Notes;
       let user1Notes;
       beforeEach(async () => {
@@ -133,7 +133,7 @@ describe("/notes", () => {
         expect(res.body).toEqual(user1Notes)
       });
     });
-    describe('GET /:id', () => {
+     *//* describe('GET /:id', () => {
       let user0Notes;
       let user1Notes;
       beforeEach(async () => {
@@ -187,6 +187,6 @@ describe("/notes", () => {
           .send();
         expect(res.statusCode).toEqual(404);
       });
-    });
+    }); */
   });
 });

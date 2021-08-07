@@ -1,5 +1,101 @@
 const { Router } = require("express");
 const router = Router();
 
+const jwt = require('jsonwebtoken');
+const secret = 'KEQZOjws7PPb2pPoFIIn';
 
-module.exports = router;
+const notesDAO = require('../daos/note');
+const note = require("../models/note");
+
+router.use(async (req, res, next) => {
+    console.log(`${req.method} ${req.url} at ${new Date()}`);
+    next();
+  });
+
+  router.use(async (req, res, next) => {
+    try {
+        const AuthHeader = req.headers.authorization;
+        if (AuthHeader) {
+            if (typeof(AuthHeader !== 'undefined')){
+            const auth = AuthHeader.split(' ');
+            req.token = auth[1];
+            }
+
+            console.log('req.token = ' + req.token)
+            req.tokenIsValid = jwt.verify(req.token, secret);
+            if (req.tokenIsValid){
+            const decoded = jwt.decode(req.token);
+
+            req.payload = decoded;
+            }
+        }
+
+        if (!req.token){
+            throw new Error('Token is Invalid');
+        }
+      next();
+    } catch (e) {
+      next(e);
+    }
+  });
+
+
+router.post("/", async (req, res, next) => {
+    const reqBody = req.body;
+    const reqPayload = req.payload;
+    
+    try {
+        console.log(reqBody);
+        console.log(reqPayload);
+        if (reqBody && reqPayload){
+            const notedata = {text: reqBody.text, userId: reqPayload.userId};
+            let newNote = await notesDAO.create(notedata);
+            res.json(newNote); 
+        } else {
+            next();
+        }
+    } catch(e) {      
+      next(e);
+    }
+  });
+
+/* router.get("/", async (req, res, next) => {
+    let { page, perPage } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const notes = await notesDAO.getAll(page, perPage);
+    res.json(notes);
+});
+
+router.get("/:id", async (req, res, next) => {
+    let { page, perPage } = req.query;
+    page = page ? Number(page) : 0;
+    perPage = perPage ? Number(perPage) : 10;
+    const authors = await authorDAO.getAll(page, perPage);
+    res.json(authors);
+}); */
+
+router.use(async (err, req, res, next) => {  
+    console.log(err);
+    if (err.message.includes("Cast to ObjectId failed")) {   
+        res.status(400).send('Invalid id provided');  
+    } else if (err.message.includes("Path `userId` is required") || err.message.includes("data and salt arguments required") || err.message.includes("userId is not defined")) {   
+        res.status(400).send('User not found');
+/*     } else if (err.message.includes("duplicate key")) {   
+        res.status(409).send('Email already in use.');
+    } else if (err.message.includes("Password needed for logout")) {   
+        res.status(409).send('Password not found');*/
+    } else if (err.message.includes("Path `text` is required.") || err.message.includes("Cannot read property 'text' of null")) {   
+        res.status(401).send("Text is required"); 
+    } else if (err.message.includes("Token is Invalid") || err.message.includes("malformed")) {   
+        res.status(401).send("Token is Invalid");
+    } else {    
+        res.status(500).send('Something broke!')  
+    }
+    next(); 
+  });
+
+  
+  module.exports = router;
+  
+  

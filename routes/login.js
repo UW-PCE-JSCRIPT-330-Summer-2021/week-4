@@ -11,7 +11,6 @@ const bCrypt = require('bcrypt');
 
 const userDAO = require('../daos/user');
 const user = require("../models/user");
-const token = require("../models/token");
 
 router.use(async (req, res, next) => {
     console.log(`${req.method} ${req.url} at ${new Date()}`);

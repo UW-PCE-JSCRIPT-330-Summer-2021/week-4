@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
     
@@ -13,10 +12,5 @@ const userSchema = new mongoose.Schema({
 });
 
 userSchema.index({ email: 1}, { unique: true});
-
-
-userSchema.methods.comparePassword = function(password) {
-    return bcrypt.compareSync(password, this.password);
-  };
 
 module.exports = mongoose.model("users", userSchema);
