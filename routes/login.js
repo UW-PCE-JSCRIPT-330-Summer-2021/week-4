@@ -109,7 +109,6 @@ router.get("/:id", async (req, res, next) => {
   }
 });*/
   
-  // Read - all authors
   router.post("/", async (req, res, next) => {
     try {
       if (!req.body.password){
@@ -219,7 +218,7 @@ router.get("/:id", async (req, res, next) => {
         res.status(400).send('Password is required');
     } else if (err.message.includes("duplicate key")) {   
         res.status(409).send('Email already in use.');
-    } else if (err.message.includes("Password match failed")) {   
+    } else if (err.message.includes("Password match failed") || err.message.includes("Cannot read property 'password' of null")) {   
         res.status(401).send("Password doesn't match");
     } else if (err.message.includes("Token is Invalid") || err.message.includes("malformed")) {   
         res.status(401).send("Token is Invalid");
