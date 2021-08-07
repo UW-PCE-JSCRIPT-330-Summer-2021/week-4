@@ -126,7 +126,7 @@ describe("/login", () => {
     });
 
     describe("POST /password", () => {
-/*       it("should reject bogus token", async () => {
+      it("should reject bogus token", async () => {
         const res = await request(server)
           .post("/login/password")
           .set('Authorization', 'Bearer BAD')
@@ -139,7 +139,7 @@ describe("/login", () => {
           .set('Authorization', 'Bearer ' + token0)
           .send({ password: '' });
         expect(res.statusCode).toEqual(400);
-      }); */
+      });
       it("should change password for user0", async () => {
         const res = await request(server)
           .post("/login/password")

@@ -141,6 +141,7 @@ router.get("/:id", async (req, res, next) => {
           req.token = auth[1];
         }
 
+        console.log('req.token = ' + req.token)
         req.tokenIsValid = jwt.verify(req.token, secret);
         if (req.tokenIsValid){
           const decoded = jwt.decode(req.token);
@@ -220,7 +221,7 @@ router.get("/:id", async (req, res, next) => {
         res.status(409).send('Email already in use.');
     } else if (err.message.includes("Password match failed")) {   
         res.status(401).send("Password doesn't match");
-    } else if (err.message.includes("Token is Invalid")) {   
+    } else if (err.message.includes("Token is Invalid") || err.message.includes("malformed")) {   
         res.status(401).send("Token is Invalid");
     } else {    
         res.status(500).send('Something broke!')  
