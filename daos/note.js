@@ -4,16 +4,16 @@ const Note = require('../models/note');
 
 module.exports = {};
 
-/*module.exports.getById = (userId) => {
+module.exports.getById = (noteId, userId) => {
    if (!mongoose.Types.ObjectId.isValid(userId)) {
     return null;
   }
-  return User.findOne({ _id: userId }).lean();
-} */
+  return Note.findOne({ _id: noteId, userId: userId }).lean();
+}
   
-  module.exports.getByUserId = (userId) => {
-    return Note.find({userId: userId});
-  }
+module.exports.getByUserId = (userId) => {
+  return Note.find({userId: userId});
+}
   
  /*  module.exports.getByIdAndEmail = (userId, email) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) {

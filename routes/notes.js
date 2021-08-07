@@ -67,14 +67,16 @@ router.post("/", async (req, res, next) => {
         next(e);
     }
 });
-/*
+
 router.get("/:id", async (req, res, next) => {
-    let { page, perPage } = req.query;
-    page = page ? Number(page) : 0;
-    perPage = perPage ? Number(perPage) : 10;
-    const authors = await authorDAO.getAll(page, perPage);
-    res.json(authors);
-}); */
+    try {
+        const noteId = req.params.id;
+        const note = await notesDAO.getById(noteId, req.payload.userId);
+        res.json(note);
+    } catch(e) {      
+        next(e);
+    }
+});
 
 router.use(async (err, req, res, next) => {  
     console.log(err);
