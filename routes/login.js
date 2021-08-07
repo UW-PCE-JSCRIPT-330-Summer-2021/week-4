@@ -19,21 +19,6 @@ router.use(async (req, res, next) => {
     console.log(req.salt);
     next();
   });
-    
-/* hash = async (password) => {
-  return bcrypt.hash(password, 7).then(logHash);
-} */
-
-/* router.use(async (req, res, next) => {
-    const { userId } = req.params;
-    const user = await userDAO.getById(userId);
-    if (!user) {    
-        res.status(404).send("User not found");
-    } else {
-        next();
-    }
-}); */
-
 
 
 //create
@@ -74,40 +59,6 @@ router.use(async (req, res, next) => {
   }
 });
 
-
-/* router.use(async (req, res, next) => {
-  try {
-    const { userId } = req.params;  
-    const user = await userDAO.getById(userId);
-     if (!user) {
-      res.status(404).send("User not found");
-    } else {
-      req.user = user;
-      next();
-    } 
-    if (user) {
-      req.user = user;
-      next();
-    } else {
-      throw new Error('user not found');
-    }
-    
-  } catch (e) {
-    next(e);
-  }
-});
- */
-
-
-/* // Read - single author
-router.get("/:id", async (req, res, next) => {
-  const author = await authorDAO.getById(req.params.id);
-  if (author) {
-    res.json(author);    
-  } else {
-    res.sendStatus(404);
-  }
-});*/
   
   router.post("/", async (req, res, next) => {
     try {
@@ -163,52 +114,45 @@ router.get("/:id", async (req, res, next) => {
         throw new Error('Token is Invalid');
         
       } else if (req.payload.email && req.payload.userId) {
-        const hash = bCrypt.hash(req.body.password, req.salt);
-        const newPasswordHash = (await hash).toString();
-        const data = { password: newPasswordHash}
 
-        let updatedUser = await userDAO.updateById(req.payload.userId, data);
+        const queryUser = await userDAO.getByIdAndEmail(req.payload.userId,req.payload.email);
 
-        // TODO: Return a new token.
-        const updateData  = { userId: updatedUser._id, email: updatedUser.email }
-        let token = jwt.sign(updateData, secret);
+        if (queryUser) {
+
+          const hash = bCrypt.hash(req.body.password, req.salt);
+          const newPasswordHash = (await hash).toString();
+          const data = { password: newPasswordHash}
+
+          await userDAO.updateById(queryUser._id, data);  
+  
+          // Return a new token.  
+          let token = jwt.sign(req.payload, secret);
+          res.json({token});
+
+        } else {
+          next();
+        }
+      }
+    } catch (e) {
+      next(e);
+    }
+  });
+  
+  router.post("/logout", async (req, res, next) => {
+    try {
+      if (!req.tokenIsValid) { 
+        throw new Error('Token is Invalid');
+        
+      } else if (req.payload.email && req.payload.userId) {
+
+        let token = jwt.sign(req.payload, secret, { expiresIn: '1 millisecond' });
         res.json({token});
       }
     } catch (e) {
       next(e);
     }
-  });/*
-  
-  // Update
-  router.put("/:id", async (req, res, next) => {
-    const authorId = req.params.id;
-    const author = req.body;
-    if (!author || JSON.stringify(author) === '{}' ) {
-      res.status(400).send('author is required"');
-    } else {
-      try {
-        const success = await authorDAO.updateById(authorId, author);
-        res.sendStatus(success ? 200 : 400); 
-      } catch(e) {
-        if (e instanceof authorDAO.BadDataError) {
-          res.status(400).send(e.message);
-        } else {
-          res.status(500).send(e.message);
-        }
-      }
-    }
   });
   
-  // Delete
-  router.delete("/:id", async (req, res, next) => {
-    const authorId = req.params.id;
-    try {
-      const success = await authorDAO.deleteById(authorId);
-      res.sendStatus(success ? 200 : 400);
-    } catch(e) {
-      res.status(500).send(e.message);
-    }
-  }); */
   
   router.use(async (err, req, res, next) => {  
     console.log(err);
@@ -218,6 +162,8 @@ router.get("/:id", async (req, res, next) => {
         res.status(400).send('Password is required');
     } else if (err.message.includes("duplicate key")) {   
         res.status(409).send('Email already in use.');
+    } else if (err.message.includes("Password needed for logout")) {   
+        res.status(409).send('Password not found');
     } else if (err.message.includes("Password match failed") || err.message.includes("Cannot read property 'password' of null")) {   
         res.status(401).send("Password doesn't match");
     } else if (err.message.includes("Token is Invalid") || err.message.includes("malformed")) {   

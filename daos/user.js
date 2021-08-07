@@ -18,6 +18,14 @@ module.exports = {};
   module.exports.getByLogin = (email) => {
     return User.findOne({email: email});
   }
+  
+  module.exports.getByIdAndEmail = (userId, email) => {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return null;
+    }
+    return User.findOne({ _id: userId, email: email }).lean();
+  }
+
   /*
   module.exports.deleteById = async (authorId) => {
     if (!mongoose.Types.ObjectId.isValid(authorId)) {

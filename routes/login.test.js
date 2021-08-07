@@ -35,15 +35,15 @@ describe("/login", () => {
         expect(res.statusCode).toEqual(401);
       });
     });
-/*
+
     describe("POST /logout", () => {
       it("should return 401", async () => {
         const res = await request(server).post("/login/logout").send();
         expect(res.statusCode).toEqual(401);
       });
-    });*/
-  }); 
-  
+    });
+  });  
+
   describe("signup ", () => {
     describe("POST /signup", () => {
       it("should return 400 without a password", async () => {
@@ -173,8 +173,8 @@ describe("/login", () => {
         expect(loginRes1.statusCode).toEqual(200);
       });
      
-    });
-    /* describe("POST /logout", () => {
+    }); 
+    describe("POST /logout", () => {
       it("should reject bogus token", async () => {
         const res = await request(server)
           .post("/login/logout")
@@ -182,7 +182,7 @@ describe("/login", () => {
           .send();
         expect(res.statusCode).toEqual(401);
       });
-      it("should prevent only user0 from making a password change", async () => {
+       it("should prevent only user0 from making a password change", async () => {
         const res = await request(server)
           .post("/login/logout")
           .set('Authorization', 'Bearer ' + token0)
@@ -198,7 +198,7 @@ describe("/login", () => {
           .set('Authorization', 'Bearer ' + token1)
           .send({ password: '123' });
         expect(res1.statusCode).toEqual(200);
-      });
+      }); 
       it("should prevent only user1 from making a password change", async () => {
         const res = await request(server)
           .post("/login/logout")
@@ -215,7 +215,7 @@ describe("/login", () => {
           .set('Authorization', 'Bearer ' + token1)
           .send({ password: '123' });
         expect(res1.statusCode).toEqual(401);
-      });
-    }); */
+      }); 
+    });
   });
 });
