@@ -5,9 +5,9 @@ const Note = require('../models/note');
 module.exports = {};
 
 module.exports.getById = (noteId, userId) => {
-   if (!mongoose.Types.ObjectId.isValid(userId)) {
-    return null;
-  }
+  //  if (!mongoose.Types.ObjectId.isValid(userId)) {
+  //   return null;
+  // }
   return Note.findOne({ _id: noteId, userId: userId }).lean();
 }
   

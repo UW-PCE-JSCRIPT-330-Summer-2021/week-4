@@ -72,6 +72,9 @@ router.get("/:id", async (req, res, next) => {
     try {
         const noteId = req.params.id;
         const note = await notesDAO.getById(noteId, req.payload.userId);
+        if (!note) {
+            throw new Error("Invalid note ID");
+        }
         res.json(note);
     } catch(e) {      
         next(e);
@@ -84,10 +87,8 @@ router.use(async (err, req, res, next) => {
         res.status(400).send('Invalid id provided');  
     } else if (err.message.includes("Path `userId` is required") || err.message.includes("data and salt arguments required") || err.message.includes("userId is not defined")) {   
         res.status(400).send('User not found');
-/*     } else if (err.message.includes("duplicate key")) {   
-        res.status(409).send('Email already in use.');
-    } else if (err.message.includes("Password needed for logout")) {   
-        res.status(409).send('Password not found');*/
+     } else if (err.message.includes("Invalid note ID")) {   
+        res.status(404).send('Invalid note ID');
     } else if (err.message.includes("Path `text` is required.") || err.message.includes("Cannot read property 'text' of null")) {   
         res.status(401).send("Text is required"); 
     } else if (err.message.includes("Token is Invalid") || err.message.includes("malformed")) {   
