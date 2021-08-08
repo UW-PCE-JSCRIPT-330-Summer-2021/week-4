@@ -8,6 +8,7 @@ const notesDAO = require('../daos/note');
 const note = require("../models/note");
 
 const isLoggedIn = require("../middleware/IsLoggedIn");
+const errorReport = require("../middleware/ErrorReport");
 
 router.use(async (req, res, next) => {
     console.log(`${req.method} ${req.url} at ${new Date()}`);
@@ -98,25 +99,10 @@ router.get("/:id", async (req, res, next) => {
     }
 });
 
-router.use(async (err, req, res, next) => {  
-    console.log(err);
-    if (err.message.includes("Cast to ObjectId failed")) {   
-        res.status(400).send('Invalid id provided');  
-    } else if (err.message.includes("Path `userId` is required") || err.message.includes("data and salt arguments required") || err.message.includes("userId is not defined")) {   
-        res.status(400).send('User not found');
-     } else if (err.message.includes("Invalid note ID")) {   
-        res.status(404).send('Invalid note ID');
-    } else if (err.message.includes("Path `text` is required.") || err.message.includes("Cannot read property 'text' of null")) {   
-        res.status(401).send("Text is required"); 
-    } else if (err.message.includes("Token is Invalid") || err.message.includes("malformed")) {   
-        res.status(401).send("Token is Invalid");
-    } else {    
-        res.status(500).send('Something broke!')  
-    }
-    next(); 
-  });
+router.use(errorReport);
+
 
   
-  module.exports = router;
+module.exports = router;
   
   
