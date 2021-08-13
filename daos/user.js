@@ -15,12 +15,6 @@ module.exports = {};
     return User.findOne({email: email});
   }
   
-  module.exports.getByIdAndEmail = async (userId, email) => {
-    if (!mongoose.Types.ObjectId.isValid(userId)) {
-      return null;
-    }
-    return User.findOne({ _id: userId, email: email }).lean();
-  }
   module.exports.updateById = async (userId, newObj) => {
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return false;
