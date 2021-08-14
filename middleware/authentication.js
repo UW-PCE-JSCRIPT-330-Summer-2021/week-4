@@ -1,0 +1,23 @@
+const tokenDAO = require('../daos/token');
+
+// Authentication and Token Validation //
+module.exports.isLoggedIn = async (req, res, next) => {
+    const uniqueToken = req.headers.authorization;
+    try {
+        if (uniqueToken) {
+            const tokenString = uniqueToken.split(' ')[1];
+            const userId = await tokenDAO.getUserIdFromToken(tokenString);
+            if (userId) {
+                req.userId = userId;
+                req.token = token;
+                next();
+            } else {
+                res.sendStatus(401);
+            }
+        } else {
+            res.sendStatus(401);
+        }
+    } catch (e) {
+        next(e)
+    }
+};
