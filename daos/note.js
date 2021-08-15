@@ -4,8 +4,7 @@ module.exports = {};
 
 module.exports.getNote = async (userId, noteId) => {
     try {
-        const returnedNote = await Note.findOne({ _id: noteId, userId: userId });
-        return returnedNote;
+        return returnedNote = await Note.findOne({ _id: noteId, userId: userId }).lean();
     } catch (e) {
         next(e)
     }
@@ -13,8 +12,7 @@ module.exports.getNote = async (userId, noteId) => {
 
 module.exports.getUserNotes = async (userId) => {
     try {
-        const allUserNotes = await Note.find({ userId: userId }).lean();
-        return allUserNotes;
+        return allUserNotes = await Note.find({ userId: userId }).lean();
     } catch (e) {
         next(e)
     }
@@ -22,9 +20,7 @@ module.exports.getUserNotes = async (userId) => {
 
 module.exports.createNote = async (userId, noteObj) => {
     try {
-        nobeObj.userId = userId;
-        const noteCreated = await Note.create({ userId: userId, text: noteObj });
-        return noteCreated;
+        return noteCreated = await Note.create({ userId: userId, text: noteObj });
     } catch (e) {
         next(e)
     }

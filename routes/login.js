@@ -5,20 +5,14 @@ const userDAO = require('../daos/user');
 const tokenDAO = require('../daos/token');
 const { isLoggedIn } = require('../middleware/authentication');
 
-router.use(isLoggedIn);
-
 // Signup Route //
 router.post("/signup", async (req, res, next) => {
-    const user = req.body;
-    const email = user.email;
-    const password = user.password;
-    if (!email || !password) {
+    const { email, password } = req.body;
+    if (!email || !email === '' || !password || !password === '') {
         res.status(400).send('Email and/or password required');
-    } else if (email === '' || password === '') {
-        res.status(400).send('Empty email and/or password')
     } else {
         try {
-            const user = await userDAO.getUser(email);
+            const user = await userDAO.getUserById(email);
             if (user) {
                 res.status(409).send('Email already exists');
             } else { 
@@ -29,29 +23,26 @@ router.post("/signup", async (req, res, next) => {
         } catch (e) {
             next(e)
         }
-        }
+    }
 });
 
 // Login Route //
 router.post("/", async (req, res, next) => {
-    const user = req.body;
-    const email = user.email;
-    const password = user.password;
-    if (!email || email === '') {
-        res.status(400).send('Missing email');
-    } else if (!password || password === '') {
-        res.status(400).send('Missing password')
+    const { email, password } = req.body;
+    if (!email || email === '' || !password || password === '') {
+        res.status(400).send('Email and/or password required');
     } else {
         try {
-            const user = await userDAO.getUser(email);
+            const user = await userDAO.getUserById(email);
             if (!user) {
                 res.sendStatus(401);
                 } else {
+                    const { _id: userId } = user;
                         bcrypt.compare(password, user.password, async (error, result) => {
                             if (error || !result) {
                                 res.status(401).send('Password does not match');
                             } else {
-                                const token = await tokenDAO.getTokenForUserId(user._id);
+                                const token = await tokenDAO.getTokenForUserId(userId);
                                 res.status(200).send(token);
                             }
                         })
@@ -67,9 +58,9 @@ router.post("/password", isLoggedIn, async (req, res, next) => {
     try {
         const password = req.body.password;
         if (!password || password === '') {
-        res.status(400);
+        res.sendStatus(400);
         } else {
-            const hashedPassword = bcrypt.hash(password, 10);
+            const hashedPassword = await bcrypt.hash(password, 10);
             const newPassword = await userDAO.updateUserPassword(req.userId, hashedPassword);
             res.json(newPassword);
         }

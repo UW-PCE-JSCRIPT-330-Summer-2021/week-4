@@ -1,21 +1,24 @@
 const { Router } = require('express');
 const router = Router();
 const noteDAO = require('../daos/note');
-const tokenDAO = require('../daos/token');
 const { isLoggedIn } = require('../middleware/authentication');
 
-router.use(isLoggedIn);
-
+// Posting New Note Route // 
 router.post("/", isLoggedIn, async (req, res, next) => {
+    if (!req.body) {
+        res.sendStatus(401);
+    }
     try {
-        const user = req.body;
-        const savedNote = await noteDAO.createNote(req.userId, user);
+        const note = req.body;
+        const userId = req.userId;
+        const savedNote = await noteDAO.createNote(userId, note);
         res.json(savedNote);
     } catch (e) {
         next(e)
     }
 });
 
+// Find All Notes Route //
 router.get("/", isLoggedIn, async (req, res, next) => {
     try {
         const storeNotes = await noteDAO.getUserNotes(req.userId);
@@ -25,11 +28,12 @@ router.get("/", isLoggedIn, async (req, res, next) => {
     }
 });
 
+// Find Single Note Route // 
 router.get("/:id", isLoggedIn, async (req, res, next) => {
     try {
         const storeNote = await noteDAO.getNote(req.userId, req.params.id);
         if (!storeNote) {
-            res.status(404).send("Cannot find note");
+            res.sendStatus(404);
         } else {
             res.json(storeNote);
         }

@@ -6,20 +6,17 @@ module.exports = {};
 
 module.exports.getTokenForUserId = async (userId) => {
     try {
-        const token = uuidv4();
-        const retrieveToken = await Token.create({ token, userId });
+        const retrieveToken = await Token.create({ token: uuidv4(), userId });
         return retrieveToken;
     } catch (e) {
-        next(e)
     }
 };
 
-module.exports.getUserIdFromToken = async (tokenString) => {
+module.exports.getUserFromToken = async (tokenString) => {
     try {
         const findToken = await Token.findOne({ token: tokenString }).lean();
         return findToken;
     } catch (e) {
-        next(e)
     }
 };
 
@@ -28,6 +25,5 @@ module.exports.removeToken = async (tokenString) => {
         const deleteToken = await Token.deleteOne({ token: tokenString });
         return deleteToken;
     } catch (e) {
-        next(e)
     }
 };
