@@ -54,9 +54,9 @@ router.post("/", async (req, res, next) => {
 // // Change Password Route //
 router.post("/password", isLoggedIn, async (req, res, next) => {
     const password = req.body.password;
-    const user = await tokenDAO.getUserFromToken(req.token);
-    console.log(typeof(req.token));
-    /// console.log(`user: ${JSON.stringify(user, null, 2)}, pw: ${JSON.stringify(password, null, 2)}`);
+    const user = await tokenDAO.getUserFromToken(req.token, req.userId);
+    // console.log(typeof(req.token));
+    // console.log(`user: ${JSON.stringify(user, null, 2)}, pw: ${JSON.stringify(password, null, 2)}`);
     if (!password || password === '') {
         res.sendStatus(400);
     } 
@@ -66,7 +66,8 @@ router.post("/password", isLoggedIn, async (req, res, next) => {
             const newPassword = await userDAO.updateUserPassword(user, hashedPassword);
             res.json(newPassword);
         } catch (e) {
-            res.sendStatus(401);
+            // console.log(`caught an exception post/password: ${e}`)
+            return res.sendStatus(401);
         } 
     }
 });

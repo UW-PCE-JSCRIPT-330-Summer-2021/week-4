@@ -7,10 +7,9 @@ module.exports.createUser = async (userObj) => {
 };
 
 module.exports.updateUserPassword = async (userId, password) => {
-    const user = await User.findOne({ email: userId });
-    return await User.updateOne({ userId: user._id }, { $set: { password } });
+    return await User.updateOne({ _id: userId }, { $set: { password: password } });
 };
 
-module.exports.getUserById = async (userId) => {
-    return await User.findOne({ email: userId }).lean();
+module.exports.getUserById = async (email) => {
+    return await User.findOne({ email }).lean();
 };

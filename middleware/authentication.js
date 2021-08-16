@@ -7,12 +7,12 @@ module.exports.isLoggedIn = async (req, res, next) => {
         if (uniqueToken) {
             const token = uniqueToken.split(' ')[1];
             const userId = await tokenDAO.getUserFromToken(token);
-            if (userId) {
+            if (!userId) {
+                return res.sendStatus(401);
+            } else {
                 req.userId = userId;
                 req.token = token;
                 next();
-            } else {
-                res.sendStatus(401);
             }
         } else {
             res.sendStatus(401);
