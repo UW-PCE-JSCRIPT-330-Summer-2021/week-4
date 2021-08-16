@@ -39,6 +39,8 @@ router.get("/:id", isLoggedIn, async (req, res, next) => {
             return res.sendStatus(404);
         }
     } catch (e) {
+        res.sendStatus(400);
+        console.log(`caught an exception in get/:id: ${e}`)
     }
 });
 

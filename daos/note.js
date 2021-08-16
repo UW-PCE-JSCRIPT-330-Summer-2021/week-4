@@ -7,7 +7,7 @@ module.exports.createNote = async (userId, noteObj) => {
 };
 
 module.exports.getNote = async (userId, noteId) => {
-    return returnedNote = await Note.findOne({ _id: noteId["text"], userId: userId["userId"] }).lean();
+    return returnedNote = await Note.findOne({ _id: noteId, userId: userId["userId"] }).lean();
 };
 
 module.exports.getUserNotes = async (userId) => {

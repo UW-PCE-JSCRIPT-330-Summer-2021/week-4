@@ -55,16 +55,20 @@ router.post("/", async (req, res, next) => {
 router.post("/password", isLoggedIn, async (req, res, next) => {
     const password = req.body.password;
     const user = await tokenDAO.getUserFromToken(req.token);
-    // console.log(`user: ${JSON.stringify(userId, null, 2)}, pw: ${JSON.stringify(password, null, 2)}`);
+    console.log(typeof(req.token));
+    /// console.log(`user: ${JSON.stringify(user, null, 2)}, pw: ${JSON.stringify(password, null, 2)}`);
     if (!password || password === '') {
-    res.sendStatus(400);
-    } try {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newPassword = await userDAO.updateUserPassword(user, hashedPassword);
-        return res.json(newPassword);
+        res.sendStatus(400);
+    } 
+    else {
+        try {
+            const hashedPassword = await bcrypt.hash(password, 10);
+            const newPassword = await userDAO.updateUserPassword(user, hashedPassword);
+            res.json(newPassword);
         } catch (e) {
             res.sendStatus(401);
         } 
+    }
 });
 
 // Logout Route //

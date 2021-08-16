@@ -5,7 +5,7 @@ const { v4: uuidv4 } = require('uuid');
 module.exports = {};
 
 module.exports.getTokenForUserId = async (userId) => {
-    const retrieveToken = await Token.create({ token: uuidv4(), userId });
+    const retrieveToken = await Token.create({ userId: userId, token: uuidv4() });
     return retrieveToken;
 };
 
