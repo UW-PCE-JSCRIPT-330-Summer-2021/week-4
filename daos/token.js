@@ -5,25 +5,16 @@ const { v4: uuidv4 } = require('uuid');
 module.exports = {};
 
 module.exports.getTokenForUserId = async (userId) => {
-    try {
-        const retrieveToken = await Token.create({ token: uuidv4(), userId });
-        return retrieveToken;
-    } catch (e) {
-    }
+    const retrieveToken = await Token.create({ token: uuidv4(), userId });
+    return retrieveToken;
 };
 
 module.exports.getUserFromToken = async (tokenString) => {
-    try {
-        const findToken = await Token.findOne({ token: tokenString }).lean();
-        return findToken;
-    } catch (e) {
-    }
+    const findToken = await Token.findOne({ token: tokenString }).lean();
+    return findToken;
 };
 
 module.exports.removeToken = async (tokenString) => {
-    try{
-        const deleteToken = await Token.deleteOne({ token: tokenString });
-        return deleteToken;
-    } catch (e) {
-    }
+    const deleteToken = await Token.deleteOne({ token: tokenString });
+    return deleteToken;
 };

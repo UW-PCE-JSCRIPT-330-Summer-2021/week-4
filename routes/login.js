@@ -21,7 +21,6 @@ router.post("/signup", async (req, res, next) => {
                 res.json(newUser);
             }
         } catch (e) {
-            next(e)
         }
     }
 });
@@ -48,26 +47,24 @@ router.post("/", async (req, res, next) => {
                         })
                     }
             } catch (e) {
-                next(e)
             }
         }
 });
 
 // // Change Password Route //
 router.post("/password", isLoggedIn, async (req, res, next) => {
-    try {
-        const password = req.body.password;
-        if (!password || password === '') {
-        res.sendStatus(400);
-        } else {
-            const hashedPassword = await bcrypt.hash(password, 10);
-            const newPassword = await userDAO.updateUserPassword(req.userId, hashedPassword);
-            res.json(newPassword);
-        }
-    } catch (e) {
-        res.sendStatus(401);
-        next(e)
-    }
+    const password = req.body.password;
+    const user = await tokenDAO.getUserFromToken(req.token);
+    // console.log(`user: ${JSON.stringify(userId, null, 2)}, pw: ${JSON.stringify(password, null, 2)}`);
+    if (!password || password === '') {
+    res.sendStatus(400);
+    } try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newPassword = await userDAO.updateUserPassword(user, hashedPassword);
+        return res.json(newPassword);
+        } catch (e) {
+            res.sendStatus(401);
+        } 
 });
 
 // Logout Route //
@@ -77,7 +74,6 @@ router.post("/logout", isLoggedIn, async (req, res, next) => {
         const removeToken = await tokenDAO.removeToken(token);
         res.json(removeToken);
     } catch (e) {
-        next(e)
     }
 });
 

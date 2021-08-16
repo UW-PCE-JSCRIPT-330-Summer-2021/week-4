@@ -4,19 +4,19 @@ const tokenDAO = require('../daos/token');
 module.exports.isLoggedIn = async (req, res, next) => {
     const uniqueToken = req.headers.authorization;
     try {
-            if (uniqueToken) {
-                const token = uniqueToken.split(' ')[1];
-                const userId = await tokenDAO.getUserFromToken(token);
-                if (userId) {
-                    req.userId = userId;
-                    req.token = token;
-                    next();
-                } else {
-                    res.sendStatus(401);
-                }
+        if (uniqueToken) {
+            const token = uniqueToken.split(' ')[1];
+            const userId = await tokenDAO.getUserFromToken(token);
+            if (userId) {
+                req.userId = userId;
+                req.token = token;
+                next();
             } else {
                 res.sendStatus(401);
             }
-        } catch (e) {
+        } else {
+            res.sendStatus(401);
+        }
+    } catch (e) {
     }
 };
