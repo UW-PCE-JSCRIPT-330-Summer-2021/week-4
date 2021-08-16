@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "test": "jest --coverage --runInBand",
+    "test": "jest --coverage --runInBand --detectOpenHandles --colors",
     "tdd": "jest --watch --runInBand"
   },
   "repository": {
@@ -19,11 +19,14 @@
   },
   "homepage": "https://github.com/UW-PCE-JSCRIPT-330-Summer-2021/week-4#readme",
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "express": "^4.17.1",
-    "mongoose": "^5.12.14"
+    "mongoose": "^5.12.14",
+    "uuid": "^8.3.2"
   },
   "devDependencies": {
     "@shelf/jest-mongodb": "^1.2.5",
+    "eslint": "^7.32.0",
     "jest": "^27.0.4",
     "supertest": "^6.1.3"
   }
