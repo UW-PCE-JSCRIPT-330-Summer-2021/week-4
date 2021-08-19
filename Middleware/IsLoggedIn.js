@@ -36,6 +36,3 @@ module.exports = async (req, res, next) => {
 
     }
  };
-
-class BadDataError extends Error {};
-module.exports.BadDataError = BadDataError;
