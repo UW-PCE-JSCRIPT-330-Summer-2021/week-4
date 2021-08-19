@@ -1,7 +1,6 @@
 const { Router } = require("express");
 const router = Router();
 
-
 const bCrypt = require('bcrypt');
 
 const userDAO = require('../daos/user');
