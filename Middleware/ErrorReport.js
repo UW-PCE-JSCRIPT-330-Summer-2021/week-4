@@ -4,6 +4,7 @@
 
 // const tokenDAO = require('../daos/token');
 // const token = require("../models/token");
+module.exports = {};
 
 module.exports = (async (err, req, res, next) => {  
     console.log(err);
