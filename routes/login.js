@@ -96,31 +96,6 @@ router.use(async (req, res, next) => {
     }
   });
 
-  // router.use(async (req, res, next) => {
-  //   try {
-      // const AuthHeader = req.headers.authorization;
-      // if (AuthHeader) {
-      //   if (typeof(AuthHeader !== 'undefined')){
-      //     const auth = AuthHeader.split(' ');
-      //     req.token = auth[1];
-      //   }
-
-      //   console.log('req.token = ' + req.token)
-      //   req.user = await tokenDAO.getUserIdFromToken(req.token);
-        
-        // req.tokenIsValid = jwt.verify(req.token, secret);
-        // if (req.tokenIsValid){
-          // const decoded = jwt.decode(req.token);
-
-          // req.payload = decoded;
-        // }
-  //     }
-  //     next();
-  //   } catch (e) {
-  //     next(e);
-  //   }
-  // });
-
   router.use(isLoggedIn);
   
   //Password change
@@ -133,9 +108,6 @@ router.use(async (req, res, next) => {
         throw new Error('Token is Invalid');
       }
 
-      // const queryUser = await userDAO.getByIdAndEmail(req.token.userId);
-
-      // if (queryUser) {
 
         const hash = bCrypt.hash(req.body.password, req.salt);
         const newPasswordHash = (await hash).toString();
@@ -164,11 +136,6 @@ router.use(async (req, res, next) => {
       if (!req.tokenIsValid) { 
         throw new Error('Token is Invalid');
       }
-      // let token = jwt.sign(req.payload, secret, { expiresIn: '1 millisecond' });
-      // res.json({token});
-
-      // console.log(`token = ${req.token}`);
-      // console.log(`userId = ${req.user._id}`);
       const removed = await tokenDAO.removeToken({ token: req.token, userId: req.user._id});
       console.log(`removed = ${removed}`);
       // console.log(`removed.deleteCount = ${removed.deleteCount}`);
@@ -181,8 +148,7 @@ router.use(async (req, res, next) => {
       next(e);
     }
   });
-  
-  router.use(isLoggedIn);
+
   router.use(errorReport); 
   
   
