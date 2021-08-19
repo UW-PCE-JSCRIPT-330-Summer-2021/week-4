@@ -1,9 +1,9 @@
 
-const userDAO = require('../daos/user');
-const user = require("../models/user");
+// const userDAO = require('../daos/user');
+// const user = require("../models/user");
 
-const tokenDAO = require('../daos/token');
-const token = require("../models/token");
+// const tokenDAO = require('../daos/token');
+// const token = require("../models/token");
 
 module.exports = (async (err, req, res, next) => {  
     console.log(err);
