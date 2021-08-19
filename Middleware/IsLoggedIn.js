@@ -1,9 +1,9 @@
 
 const userDAO = require('../daos/user');
-const user = require("../models/user");
+// const user = require("../models/user");
 
 const tokenDAO = require('../daos/token');
-const token = require("../models/token");
+// const token = require("../models/token");
 
 module.exports = async (req, res, next) => {
     try {

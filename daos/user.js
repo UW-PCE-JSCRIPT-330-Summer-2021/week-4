@@ -28,9 +28,6 @@ module.exports = {};
       const created = User.create(userData);
       return created;
     } catch (e) {
-      if (e.message.includes('validation failed') || e.message.includes('duplicate key')) {
-        throw new BadDataError(e.message);
-      }
       throw e;
     }
   }

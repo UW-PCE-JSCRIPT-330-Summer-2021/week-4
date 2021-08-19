@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const router = Router();
 
+
 // const jwt = require('jsonwebtoken');
 // const secret = 'KEQZOjws7PPb2pPoFIIn';
 
@@ -8,10 +9,10 @@ const router = Router();
 const bCrypt = require('bcrypt');
 
 const userDAO = require('../daos/user');
-const user = require("../models/user");
+// const user = require("../models/user");
 
 const tokenDAO = require('../daos/token');
-const token = require("../models/token");
+// const token = require("../models/token");
 
 const isLoggedIn = require("../middleware/IsLoggedIn");
 const errorReport = require("../middleware/ErrorReport");
@@ -181,6 +182,7 @@ router.use(async (req, res, next) => {
     }
   });
   
+  router.use(isLoggedIn);
   router.use(errorReport); 
   
   
