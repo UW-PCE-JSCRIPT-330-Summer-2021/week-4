@@ -1,7 +1,7 @@
 {
   "name": "week-4",
   "version": "1.0.0",
-  "description": "",
+  "description": "This week is an exercise in authentication and middleware.",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

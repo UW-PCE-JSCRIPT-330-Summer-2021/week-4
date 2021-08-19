@@ -8,8 +8,8 @@ const userDAO = require('../daos/user');
 
 const tokenDAO = require('../daos/token');
 
-const errorReport = require('../middleware/ErrorReport');
-const isLoggedIn = require('../middleware/IsLoggedIn');
+let errorReport = require('../middleware/ErrorReport');
+let isLoggedIn = require('../middleware/IsLoggedIn');
 
 router.use(async (req, res, next) => {
     console.log(`${req.method} ${req.url} at ${new Date()}`);
