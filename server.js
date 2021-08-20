@@ -2,13 +2,13 @@ const express = require("express");
 
 const routes = require("./routes");
 
-const middleware = require("./middleware/isLoggedIn.js");
+const middleware = require("./middleware");
 
 const server = express();
 server.use(express.json());
 
-server.use(routes);
 server.use(middleware);
+server.use(routes);
 
 // server.get("/users", isLoggedIn, function(req, res) {
 //     console.log("This is isLoggedIn");
