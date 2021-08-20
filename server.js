@@ -2,7 +2,7 @@ const express = require("express");
 
 const routes = require("./routes");
 
-const middleware = require("./middleware");
+const middleware = require("./Middleware");
 
 const server = express();
 server.use(express.json());
