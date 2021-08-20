@@ -8,7 +8,7 @@ const notesDAO = require('../daos/note');
 const note = require("../models/note");
 
 const isLoggedIn = require("../Middleware/IsLoggedIn");
-const errorReport = require("../Middleware/errorreport");
+const errorReport = require("../Middleware/ErrorReport");
 
 router.use(async (req, res, next) => {
     console.log(`${req.method} ${req.url} at ${new Date()}`);
